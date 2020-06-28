@@ -23,8 +23,7 @@ HomeostasisAudioProcessor::HomeostasisAudioProcessor()
                      #endif
                        ),
         processorChoises({"Empty","Filter","Phaser","Distortion"})
-        , mainTree(*this, nullptr, "SlotsParameters"
-        , MainTreeLayout())
+        , mainTree(*this, nullptr, "SlotsParameters", MainTreeLayout())
         , feedbackProcessor(std::make_unique<AudioProcessorGraph>())
         
 #endif
@@ -39,10 +38,7 @@ HomeostasisAudioProcessor::HomeostasisAudioProcessor()
     mSlotsMap.insert(std::pair <String, int> ("slot2", 6));
     mSlotsMap.insert(std::pair <String, int> ("slot3", 7));
     mSlotsMap.insert(std::pair <String, int> ("slot4", 8));
-    feedbackNodes.add(feedbackNode1);
-    feedbackNodes.add(feedbackNode2);
-    feedbackNodes.add(feedbackNode3);
-    feedbackNodes.add(feedbackNode4);
+   
 
 }
 
@@ -226,9 +222,12 @@ void HomeostasisAudioProcessor::initialiseFeedbackGraph () // helper function wh
  {
      feedbackInputNode = feedbackProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(AudioGraphIOProcessor::audioInputNode));
      feedbackOutpoutNode = feedbackProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(AudioGraphIOProcessor::audioOutputNode));
+     feedbackNode1 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
+     feedbackNode2 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
+     feedbackNode3 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
+     feedbackNode4 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
 
-     connectFeedbackNodes();
-
+     makeSlotConnections();
  }
 
  void HomeostasisAudioProcessor::updateFeedbackGraph () // helper function which updates the processing chains
@@ -268,93 +267,95 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
     return {parameters.begin(), parameters.end()};
 }
 
-
-void HomeostasisAudioProcessor::valueTreePropertyChanged (ValueTree& treeWhosePropertyHasChanged, const Identifier& property)
-{
-   
-}
 //==============================================================================
 
+void HomeostasisAudioProcessor::setSlotNode(int index, std::unique_ptr<AudioProcessor> processor)
+{
+    if (index == 0)
+    {
+        feedbackNode1 = feedbackProcessor->addNode(std::move(processor));
+    }
+    if (index == 1)
+    {
+        feedbackNode2 = feedbackProcessor->addNode(std::move(processor));
+    }
+    if (index == 2)
+    {
+        feedbackNode3 = feedbackProcessor->addNode(std::move(processor));
+    }
+    if (index == 3)
+    {
+        feedbackNode4 = feedbackProcessor->addNode(std::move(processor));
+    }
+    
+    
+    
+}
 
+void HomeostasisAudioProcessor::makeSlotConnections () {
+    constexpr auto left = 0;
+    constexpr auto right = 1;
+    
+    feedbackProcessor->addConnection({{feedbackInputNode->nodeID,left},{feedbackNode1->nodeID,left}});
+    feedbackProcessor->addConnection({{feedbackInputNode->nodeID,right},{feedbackNode1->nodeID,right}});
+    
+    
+    feedbackProcessor->addConnection({{feedbackNode1->nodeID,left},{feedbackNode2->nodeID,left}});
+    feedbackProcessor->addConnection({{feedbackNode1->nodeID,right},{feedbackNode2->nodeID,right}});
+    
+    feedbackProcessor->addConnection({{feedbackNode2->nodeID,left},{feedbackNode3->nodeID,left}});
+    feedbackProcessor->addConnection({{feedbackNode2->nodeID,right},{feedbackNode3->nodeID,right}});
+
+    
+    feedbackProcessor->addConnection({{feedbackNode3->nodeID,left},{feedbackNode4->nodeID,left}});
+    feedbackProcessor->addConnection({{feedbackNode3->nodeID,right},{feedbackNode4->nodeID,right}});
+
+    
+    feedbackProcessor->addConnection({{feedbackNode4->nodeID,left},{feedbackOutpoutNode->nodeID,left}});
+    feedbackProcessor->addConnection({{feedbackNode4->nodeID,right},{feedbackOutpoutNode->nodeID,right}});
+
+    
+    
+}
 void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     int nodeIndex = mSlotsMap.at(parameterID);
-    int paramIndex = mainTree.getParameter(parameterID)->getParameterIndex();
-    String choice = processorChoises.getReference(newValue);
-
-    feedbackNodes.getUnchecked(paramIndex);
     feedbackProcessor->removeNode(AudioProcessorGraph::NodeID(nodeIndex));
-
-    feedbackProcessor->getConnections();
+    
     for (auto connection : feedbackProcessor->getConnections())
     {
         feedbackProcessor->removeConnection(connection);
     }
 
 //========================== Check which processor chosen and instantiate it.
-   
+    String choice = processorChoises.getReference(newValue);
+    int paramIndex = mainTree.getParameter(parameterID)->getParameterIndex();
     if (choice == "Empty")
     {
-    feedbackNodes.set(paramIndex, nullptr);
+        setSlotNode(paramIndex, std::make_unique<ProcessorBase>());
     }
-
-    if (choice == "Filter")
-    {        feedbackNodes.set(paramIndex,feedbackProcessor->addNode(std::make_unique<SVFProcessor>(),AudioProcessorGraph::NodeID(nodeIndex)));
-       
-    }
-    
-    if (choice == "Phaser")
-    {        feedbackNodes.set(paramIndex,feedbackProcessor->addNode(std::make_unique<ProcessorBase>(),AudioProcessorGraph::NodeID(nodeIndex)));
-    }
-    
-    if (choice == "Distortion")
-    {        feedbackNodes.set(paramIndex,feedbackProcessor->addNode(std::make_unique<ProcessorBase>(),AudioProcessorGraph::NodeID(nodeIndex)));
-    }
-
-
-
-    ReferenceCountedArray<Node> activeNodes;
-    
-    for (auto node : feedbackNodes) //iteratre through the node array to check number of nodes active
+    else if (choice == "Filter")
     {
-        if (node != nullptr)
-        {
-            activeNodes.add(node);
-        }
+        setSlotNode(paramIndex ,std::make_unique<SVFProcessor>());
+    }
+    else if (choice == "Phaser")
+    {
+        setSlotNode(paramIndex, std::make_unique<ProcessorBase>());
+    }
+    else if (choice == "Distortion")
+    {
+        setSlotNode(paramIndex, std::make_unique<ProcessorBase>());
     }
     
-    if (activeNodes.isEmpty())
-    {
-        connectFeedbackNodes();
-    } else
-    {
-    
-        for (int i = 0 ; i < activeNodes.size() - 1; ++i)
-        {
-            for (int channel = 0; channel < 2; ++channel )
-            {
-                feedbackProcessor->addConnection({{activeNodes.getUnchecked(i)->nodeID,channel},{activeNodes.getUnchecked(i+1)->nodeID,channel}});
-            }
-        }
-    
-    
-        for (int channel = 0; channel < 2; ++channel)
-        {
-            feedbackProcessor->addConnection({{feedbackInputNode->nodeID,channel},{activeNodes.getFirst()->nodeID,channel}});
-            feedbackProcessor->addConnection({{activeNodes.getLast()->nodeID,channel},{feedbackOutpoutNode->nodeID,channel}});
-            
-        }
-        
-    }
-  
+    makeSlotConnections();
+
     for (auto node : feedbackProcessor->getNodes())
     {
         node->getProcessor()->enableAllBuses();
-        
     }
     
-    DBG(String("paramIndex: " + String(paramIndex)));
-      DBG(String("Choice: " + String(choice)));
-      DBG(String ("feedBackNodes array Size: " + String(feedbackNodes.size())));
-      DBG(String("feedbackProcessor active Nodes:" + String(feedbackProcessor->getNumNodes())));
+//      DBG(String("paramIndex: " + String(paramIndex)));
+//      DBG(String("Choice: " + String(choice)));
+//      DBG(String ("feedBackNodes array Size: " + String(feedbackNodes.size())));
+//      DBG(String("feedbackProcessor active Nodes:" + String(feedbackProcessor->getNumNodes())));
 }

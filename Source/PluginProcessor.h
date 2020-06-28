@@ -72,17 +72,15 @@ private:
     void updateFeedbackGraph ();
     void connectFeedbackNodes ();
     std::vector<std::unique_ptr<RangedAudioParameter>> mParameters;
-        
-    void valueTreePropertyChanged(ValueTree &treeWhosePropertyHasChanged, const Identifier &property) override;
+   
+    void setSlotNode(int index, std::unique_ptr<AudioProcessor> processor);
+    void makeSlotConnections ();
     void parameterChanged(const String &parameterID, float newValue) override;
     
     std::unique_ptr<AudioProcessorGraph> feedbackProcessor; // this is the feedback loop chain
     Node::Ptr feedbackInputNode;                            // this is the feedback loop input
     Node::Ptr feedbackOutpoutNode;                          // this is the feedback loop Output
-
     
-    
-    ReferenceCountedArray<Node> feedbackNodes;
     Node::Ptr feedbackNode1;
     Node::Ptr feedbackNode2;
     Node::Ptr feedbackNode3;
