@@ -33,13 +33,6 @@ HomeostasisAudioProcessor::HomeostasisAudioProcessor()
     mainTree.addParameterListener("slot2", this);
     mainTree.addParameterListener("slot3", this);
     mainTree.addParameterListener("slot4", this);
-    
-    mSlotsMap.insert(std::pair <String, int> ("slot1", 5));
-    mSlotsMap.insert(std::pair <String, int> ("slot2", 6));
-    mSlotsMap.insert(std::pair <String, int> ("slot3", 7));
-    mSlotsMap.insert(std::pair <String, int> ("slot4", 8));
-   
-
 }
 
 HomeostasisAudioProcessor::~HomeostasisAudioProcessor()
@@ -223,26 +216,22 @@ void HomeostasisAudioProcessor::initialiseFeedbackGraph () // helper function wh
      feedbackInputNode = feedbackProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(AudioGraphIOProcessor::audioInputNode));
      feedbackOutpoutNode = feedbackProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(AudioGraphIOProcessor::audioOutputNode));
      feedbackNode1 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
+     setNodesConfig(feedbackNode1);
+    
      feedbackNode2 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
+     setNodesConfig(feedbackNode2);
+     
      feedbackNode3 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
+     setNodesConfig(feedbackNode3);
+
      feedbackNode4 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
+     setNodesConfig(feedbackNode4);
 
      makeSlotConnections();
  }
 
- void HomeostasisAudioProcessor::updateFeedbackGraph () // helper function which updates the processing chains
- {
-     
- }
 
-void HomeostasisAudioProcessor::connectFeedbackNodes ()
-{
-    for (int channel = 0; channel < 2; ++channel)
-    {
-        feedbackProcessor->addConnection({ {feedbackInputNode->nodeID,channel},{feedbackOutpoutNode->nodeID,channel},
-        });
-    }
-}
+
 
 //Layout for defining FX Slot Parameters
 
@@ -256,8 +245,6 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
     parameters.push_back(std::make_unique<AudioParameterChoice>("slot4","Slot 4", processorChoises, 0));
     
     parameters.push_back(std::make_unique<AudioParameterBool> ("mute","Mute Input", true));
-    
-    
     
     parameters.push_back(std::make_unique<AudioParameterBool> ("bypass1", "Bypass 1", false));
     parameters.push_back(std::make_unique<AudioParameterBool> ("bypass2", "Bypass 2", false));
@@ -275,24 +262,34 @@ void HomeostasisAudioProcessor::setSlotNode(int index, std::unique_ptr<AudioProc
     {
         feedbackNode1 = feedbackProcessor->addNode(std::move(processor));
     }
-    if (index == 1)
+    else if (index == 1)
     {
         feedbackNode2 = feedbackProcessor->addNode(std::move(processor));
     }
-    if (index == 2)
+    else if (index == 2)
     {
         feedbackNode3 = feedbackProcessor->addNode(std::move(processor));
     }
-    if (index == 3)
+    else if (index == 3)
     {
         feedbackNode4 = feedbackProcessor->addNode(std::move(processor));
     }
     
+    updateHostDisplay();
     
-    
+    for (auto node : feedbackProcessor->getNodes())
+    {
+        setNodesConfig(node);
+    }
 }
 
-void HomeostasisAudioProcessor::makeSlotConnections () {
+void HomeostasisAudioProcessor::setNodesConfig (Node::Ptr node)
+{
+    node->getProcessor()->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
+}
+
+void HomeostasisAudioProcessor::makeSlotConnections ()
+{
     constexpr auto left = 0;
     constexpr auto right = 1;
     
@@ -314,13 +311,14 @@ void HomeostasisAudioProcessor::makeSlotConnections () {
     feedbackProcessor->addConnection({{feedbackNode4->nodeID,left},{feedbackOutpoutNode->nodeID,left}});
     feedbackProcessor->addConnection({{feedbackNode4->nodeID,right},{feedbackOutpoutNode->nodeID,right}});
 
-    
+    for (auto node : feedbackProcessor->getNodes())
+    {
+        node->getProcessor()->enableAllBuses();
+    }
     
 }
 void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-    int nodeIndex = mSlotsMap.at(parameterID);
-    feedbackProcessor->removeNode(AudioProcessorGraph::NodeID(nodeIndex));
     
     for (auto connection : feedbackProcessor->getConnections())
     {
@@ -347,15 +345,8 @@ void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, flo
         setSlotNode(paramIndex, std::make_unique<ProcessorBase>());
     }
     
+    
     makeSlotConnections();
 
-    for (auto node : feedbackProcessor->getNodes())
-    {
-        node->getProcessor()->enableAllBuses();
-    }
-    
-//      DBG(String("paramIndex: " + String(paramIndex)));
-//      DBG(String("Choice: " + String(choice)));
-//      DBG(String ("feedBackNodes array Size: " + String(feedbackNodes.size())));
-//      DBG(String("feedbackProcessor active Nodes:" + String(feedbackProcessor->getNumNodes())));
+
 }

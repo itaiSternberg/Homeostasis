@@ -69,8 +69,7 @@ public:
 private:
  //==============================================================================
     void initialiseFeedbackGraph ();
-    void updateFeedbackGraph ();
-    void connectFeedbackNodes ();
+    void setNodesConfig (Node::Ptr node);
     std::vector<std::unique_ptr<RangedAudioParameter>> mParameters;
    
     void setSlotNode(int index, std::unique_ptr<AudioProcessor> processor);
@@ -88,8 +87,6 @@ private:
     
     int mNumberOfSlots {4};
     
-    std::map<String, int> mSlotsMap;
-
     std::atomic <bool> shouldUpdate {false};
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessor)
 };
