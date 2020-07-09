@@ -27,7 +27,7 @@ public:
     AudioProcessorValueTreeState filterParameters;
 private:
     float lastSampleRate;
-       dsp::ProcessorDuplicator<dsp::StateVariableFilter::Filter<float>, dsp::StateVariableFilter::Parameters<float>> mStateVariableFilter;
+    dsp::StateVariableTPTFilter<float> mStateVariableFilter;
 
     void updateFilter ();
 

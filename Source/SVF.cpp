@@ -22,13 +22,13 @@ SVF::SVF()
     Array<String> filterTypes {"HP","LP","BP"};
     mFilterTypeBox.addItemList(filterTypes, 1);
     addAndMakeVisible(&mFilterTypeBox);
-    mFilterTypeAttach = std::make_unique<ComboBoxAttachment> (SVFProcessor.filterParameters, "filterType", mFilterTypeBox);
+//    mFilterTypeAttach = std::make_unique<ComboBoxAttachment> (SVFProcessor.filterParameters, "filterType", mFilterTypeBox);
     
     addAndMakeVisible(&mCutoffFreqSlider);
-    mCutoffAttach = std::make_unique<SliderAttachment>(SVFProcessor.filterParameters,"cutoff",mCutoffFreqSlider);
+//    mCutoffAttach = std::make_unique<SliderAttachment>(SVFProcessor.filterParameters,"cutoff",mCutoffFreqSlider);
     addAndMakeVisible(&mResonanceSlider);
     
-    mResAttach = std::make_unique<SliderAttachment>(SVFProcessor.filterParameters,"res",mResonanceSlider);
+//    mResAttach = std::make_unique<SliderAttachment>(SVFProcessor.filterParameters,"res",mResonanceSlider);
     addAndMakeVisible(cutOffFreqLabel);
     addAndMakeVisible(resonanceLabel);
 

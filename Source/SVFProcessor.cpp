@@ -9,9 +9,8 @@
 */
 #include "SVFProcessor.h"
 
-SVFProcessor::SVFProcessor() :  
-
-filterParameters(*this, nullptr, Identifier("Parameters"),
+SVFProcessor::SVFProcessor()
+: filterParameters(*this, nullptr, Identifier("Parameters"),
            {
         std::make_unique<AudioParameterFloat>("cutoff",
                                               "Cutoff Frequency",
@@ -27,7 +26,7 @@ filterParameters(*this, nullptr, Identifier("Parameters"),
                                               AudioProcessorParameter::genericParameter,
                                               nullptr,
                                               nullptr),
-    
+
     std::make_unique<AudioParameterFloat> ("res",
                                            "Resonance",
                                            NormalisableRange<float>(
@@ -42,7 +41,7 @@ filterParameters(*this, nullptr, Identifier("Parameters"),
                                            AudioProcessorParameter::genericParameter,
                                            nullptr,
                                            nullptr),
-   
+
     std::make_unique<AudioParameterChoice> (
                                             "filterType",
                                             "Filter Type",
@@ -61,13 +60,12 @@ SVFProcessor::~SVFProcessor()
 void SVFProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     lastSampleRate = sampleRate;
-    
+
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = getMainBusNumInputChannels();
-    
-    
+
+
     mStateVariableFilter.reset();
     mStateVariableFilter.prepare(spec);
 }
@@ -75,8 +73,8 @@ void SVFProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 void SVFProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
    
-    buffer.setSize(getMainBusNumInputChannels(), buffer.getNumSamples());
-    
+//    buffer.setSize(getMainBusNumInputChannels(), buffer.getNumSamples());
+
     dsp::AudioBlock<float> block (buffer);
     updateFilter();
     mStateVariableFilter.process(dsp::ProcessContextReplacing<float> (block));
@@ -87,21 +85,24 @@ void SVFProcessor::updateFilter ()
     float resonance = *filterParameters.getRawParameterValue("res");
     float freq = *filterParameters.getRawParameterValue("cutoff");
     int choice = *filterParameters.getRawParameterValue("filterType");
-    
+
     if (choice == 0)
     {
-        mStateVariableFilter.state-> type = dsp::StateVariableFilter::Parameters<float>::Type::highPass;
-        mStateVariableFilter.state->setCutOffFrequency(lastSampleRate, freq, resonance);
+        mStateVariableFilter.setType(dsp::StateVariableTPTFilterType::highpass);
+        mStateVariableFilter.setCutoffFrequency(freq);
+        mStateVariableFilter.setResonance(resonance);
 
     } else if (choice == 1)
 
     {
-        mStateVariableFilter.state->type = dsp::StateVariableFilter::Parameters<float>::Type::lowPass;
-        mStateVariableFilter.state->setCutOffFrequency(lastSampleRate, freq, resonance);
+       mStateVariableFilter.setType(dsp::StateVariableTPTFilterType::lowpass);
+        mStateVariableFilter.setCutoffFrequency(freq);
+        mStateVariableFilter.setResonance(resonance);
     } else
     {
-        mStateVariableFilter.state->type = dsp::StateVariableFilter::Parameters<float>::Type::bandPass;
-         mStateVariableFilter.state->setCutOffFrequency(lastSampleRate, freq, resonance);
+        mStateVariableFilter.setType(dsp::StateVariableTPTFilterType::bandpass);
+               mStateVariableFilter.setCutoffFrequency(freq);
+               mStateVariableFilter.setResonance(resonance);
     }
 
 }
