@@ -23,6 +23,7 @@ HomeostasisAudioProcessorEditor::HomeostasisAudioProcessorEditor (HomeostasisAud
     // Displaying Feedback Slots and attaching to parameters
     addAndMakeVisible(feedbackSlot1);
     feedbackSlot1Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot1",feedbackSlot1.fxMenu);
+    
     addAndMakeVisible(feedbackSlot2);
     feedbackSlot2Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot2",feedbackSlot2.fxMenu);
 

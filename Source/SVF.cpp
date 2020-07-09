@@ -15,18 +15,23 @@ SVF::SVF(AudioProcessorValueTreeState& apvts, String slotIndex)
 : mCutoffFreqSlider(Slider::SliderStyle::RotaryVerticalDrag,Slider::NoTextBox)
 , mResonanceSlider(Slider::SliderStyle::RotaryVerticalDrag,Slider::NoTextBox)
 , mFilterTypeBox("Filter Type")
-, cutOffFreqLabel("cuttoffFreqLabel", "Cutoff"),resonanceLabel("resonanceLabel", "Res.")
+, cutOffFreqLabel("cuttoffFreqLabel", "Cutoff")
+,resonanceLabel("resonanceLabel", "Res.")
+
 {
     Array<String> filterTypes {"HP","LP","BP"};
     mFilterTypeBox.addItemList(filterTypes, 1);
+    
+    addAndMakeVisible(&mCutoffFreqSlider);
+    mCutoffAttach = std::make_unique<SliderAttachment>(apvts, "cutoff" + slotIndex, mCutoffFreqSlider);
+    
+    addAndMakeVisible(&mResonanceSlider);
+    mResAttach = std::make_unique<SliderAttachment>(apvts, "res" + slotIndex, mResonanceSlider);
+    
     addAndMakeVisible(&mFilterTypeBox);
     mFilterTypeAttach = std::make_unique<ComboBoxAttachment> (apvts, "filterType" + slotIndex, mFilterTypeBox);
     
-    addAndMakeVisible(&mCutoffFreqSlider);
-    mCutoffAttach = std::make_unique<SliderAttachment>(apvts,"cutoff" + slotIndex, mCutoffFreqSlider);
-    addAndMakeVisible(&mResonanceSlider);
     
-    mResAttach = std::make_unique<SliderAttachment>(apvts,"res" + slotIndex, mResonanceSlider);
     addAndMakeVisible(cutOffFreqLabel);
     addAndMakeVisible(resonanceLabel);
 

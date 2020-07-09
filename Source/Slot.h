@@ -31,12 +31,12 @@ public:
     ComboBox fxMenu;
 private:
     
-    
-//    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> fxMenuAttach;
+    AudioProcessorValueTreeState& apvts;
+
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> fxMenuAttach;
     StringArray fxMenuOptions;
     String slotIndex;
     std::unique_ptr<Component> selectedFx  {nullptr};
-    AudioProcessorValueTreeState& apvts;
     
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Slot)

@@ -13,17 +13,15 @@
 //==============================================================================
 Slot::Slot (AudioProcessorValueTreeState& apvts, String slotIndex)
 : fxMenu()
+, apvts(apvts)
 , fxMenuOptions({"Empty","Filter","Phaser","Distortion"})
 , slotIndex(slotIndex)
 , selectedFx (std::make_unique<Label> ("Empty"))
-, apvts(apvts)
-//, chosenFxText("Empty")
 {
     addAndMakeVisible(&fxMenu);
     fxMenu.addListener(this);
     fxMenu.addItemList(fxMenuOptions, 1);
     
-//    fxComponentArray.insert(1, &filter);
     
     setSize(200,230);
 }
@@ -48,15 +46,12 @@ void Slot::paint (Graphics& g)
 
     g.setColour (Colours::white);
     g.setFont (14.0f);
-//    g.drawText (String(chosenFxText), getLocalBounds(),
-//                Justification::centred, true);   // draw some placeholder text
     
 }
 
 void Slot::resized()
 {
     fxMenu.setBounds(0, 0, getWidth(), 25);
-//    selectedFx->setBounds(5, 26, getWidth() - 10, getHeight() - 30);
 
 }
 
