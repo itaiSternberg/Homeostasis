@@ -11,10 +11,12 @@
 #include "Slot.h"
 
 //==============================================================================
-Slot::Slot ()
+Slot::Slot (AudioProcessorValueTreeState& apvts, String slotIndex)
 : fxMenu()
 , fxMenuOptions({"Empty","Filter","Phaser","Distortion"})
+, slotIndex(slotIndex)
 , selectedFx (std::make_unique<Label> ("Empty"))
+, apvts(apvts)
 //, chosenFxText("Empty")
 {
     addAndMakeVisible(&fxMenu);
@@ -69,7 +71,7 @@ void Slot::comboBoxChanged(ComboBox* ComboBox)
         selectedFx = std::make_unique<Label> ("","Empty");
     } else if (ComboBox->getText() == "Filter")
     {
-        selectedFx = std::make_unique<SVF> ();
+        selectedFx = std::make_unique<SVF> (apvts, slotIndex);
         is_label = false;
     } else if (ComboBox->getText() == "Phaser")
     {

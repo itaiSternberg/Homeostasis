@@ -21,7 +21,7 @@ class Slot    : public Component,
                 public ComboBox::Listener
 {
 public:
-    Slot();
+    Slot(AudioProcessorValueTreeState& apvts, String slotIndex);
     ~Slot();
 
     void paint (Graphics&) override;
@@ -34,9 +34,10 @@ private:
     
 //    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> fxMenuAttach;
     StringArray fxMenuOptions;
-    
-    
+    String slotIndex;
     std::unique_ptr<Component> selectedFx  {nullptr};
+    AudioProcessorValueTreeState& apvts;
+    
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Slot)
 };

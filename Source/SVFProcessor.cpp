@@ -9,46 +9,9 @@
 */
 #include "SVFProcessor.h"
 
-SVFProcessor::SVFProcessor()
-: filterParameters(*this, nullptr, Identifier("Parameters"),
-           {
-        std::make_unique<AudioParameterFloat>("cutoff",
-                                              "Cutoff Frequency",
-                                              NormalisableRange<float>(
-                                                                       40.0f,
-                                                                       18000.0f,
-                                                                       0.1f,
-                                                                       0.3,
-                                                                       false
-                                                                       ),
-                                              500.0f,
-                                              String(),
-                                              AudioProcessorParameter::genericParameter,
-                                              nullptr,
-                                              nullptr),
-
-    std::make_unique<AudioParameterFloat> ("res",
-                                           "Resonance",
-                                           NormalisableRange<float>(
-                                                                    1.0f,
-                                                                    5.0f,
-                                                                    0.1f,
-                                                                    1,
-                                                                    false
-                                                                    ),
-                                           0.0f,
-                                           String(),
-                                           AudioProcessorParameter::genericParameter,
-                                           nullptr,
-                                           nullptr),
-
-    std::make_unique<AudioParameterChoice> (
-                                            "filterType",
-                                            "Filter Type",
-                                            Array<String> {"HP","LP","BP"},
-                                            0
-                                            )
-})
+SVFProcessor::SVFProcessor(AudioProcessorValueTreeState& apvts , int slotIndex)
+: apvts(apvts)
+, slotIndex(String(slotIndex + 1))
 
 {}
 SVFProcessor::~SVFProcessor()
@@ -56,6 +19,48 @@ SVFProcessor::~SVFProcessor()
     
 }
 
+std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (String slotIndex)
+{
+    return std::make_unique<AudioProcessorParameterGroup> ("filter" + slotIndex,
+                                        "Filter" + slotIndex,
+                                        "seperator",
+                                        std::make_unique<AudioParameterFloat>("cutoff" + slotIndex,
+                                                                                  "Cutoff Frequency " + slotIndex,
+                                                                                  NormalisableRange<float>(
+                                                                                                           40.0f,
+                                                                                                           18000.0f,
+                                                                                                           0.1f,
+                                                                                                           0.3,
+                                                                                                           false
+                                                                                                           ),
+                                                                                  500.0f,
+                                                                                  String(),
+                                                                                  AudioProcessorParameter::genericParameter,
+                                                                                  nullptr,
+                                                                                  nullptr),
+
+                                        std::make_unique<AudioParameterFloat> ("res" + slotIndex ,
+                                                                               "Resonance" + slotIndex,
+                                                                               NormalisableRange<float>(
+                                                                                                        1.0f,
+                                                                                                        5.0f,
+                                                                                                        0.1f,
+                                                                                                        1,
+                                                                                                        false
+                                                                                                        ),
+                                                                               0.0f,
+                                                                               String(),
+                                                                               AudioProcessorParameter::genericParameter,
+                                                                               nullptr,
+                                                                               nullptr),
+
+                                        std::make_unique<AudioParameterChoice> (
+                                                                                "filterType" + slotIndex,
+                                                                                "Filter Type" + slotIndex,
+                                                                                Array<String> {"HP","LP","BP"},
+                                                                                0
+                                                                                ));
+};
 
 void SVFProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
@@ -82,9 +87,9 @@ void SVFProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMes
 
 void SVFProcessor::updateFilter ()
 {
-    float resonance = *filterParameters.getRawParameterValue("res");
-    float freq = *filterParameters.getRawParameterValue("cutoff");
-    int choice = *filterParameters.getRawParameterValue("filterType");
+    float resonance = *apvts.getRawParameterValue("res" + slotIndex);
+    float freq = *apvts.getRawParameterValue("cutoff"  + slotIndex);
+    int choice = *apvts.getRawParameterValue("filterType" + slotIndex);
 
     if (choice == 0)
     {
@@ -106,3 +111,6 @@ void SVFProcessor::updateFilter ()
     }
 
 }
+
+
+

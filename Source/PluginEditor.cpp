@@ -13,11 +13,14 @@
 
 //==============================================================================
 HomeostasisAudioProcessorEditor::HomeostasisAudioProcessorEditor (HomeostasisAudioProcessor& p)
-    : AudioProcessorEditor (&p), processor (p)
-
+: AudioProcessorEditor (&p)
+, processor (p)
+, feedbackSlot1(p.mainTree, "1")
+, feedbackSlot2(p.mainTree, "2")
+, feedbackSlot3(p.mainTree, "3")
+, feedbackSlot4(p.mainTree, "4")
 {
     // Displaying Feedback Slots and attaching to parameters
-    
     addAndMakeVisible(feedbackSlot1);
     feedbackSlot1Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot1",feedbackSlot1.fxMenu);
     addAndMakeVisible(feedbackSlot2);

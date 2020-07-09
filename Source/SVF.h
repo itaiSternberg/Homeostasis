@@ -22,15 +22,13 @@ typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
 class SVF    : public Component
 {
 public:
-    SVF();
+    SVF(AudioProcessorValueTreeState& apvts, String slotIndex);
     ~SVF();
 
     void paint (Graphics&) override;
     void resized() override;
 
 private:
-    SVFProcessor SVFProcessor;
-    
     
     Slider mCutoffFreqSlider;
     std::unique_ptr<SliderAttachment> mCutoffAttach;

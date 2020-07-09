@@ -237,21 +237,28 @@ void HomeostasisAudioProcessor::initialiseFeedbackGraph () // helper function wh
 
 AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTreeLayout ()
 {
-    std::vector<std::unique_ptr<RangedAudioParameter>> parameters;
+    std::vector<std::unique_ptr<AudioProcessorParameterGroup>> parameterGroups;
+    parameterGroups.push_back(std::make_unique<AudioProcessorParameterGroup>("slotGroup",
+                                                   "Slot Group",
+                                                   "seperator",
+                                                   std::make_unique<AudioParameterChoice>("slot1","Slot 1", processorChoises, 0),
+                                                   std::make_unique<AudioParameterChoice>("slot2","Slot 2", processorChoises, 0),
+                                                   std::make_unique<AudioParameterChoice>("slot3","Slot 3", processorChoises, 0),
+                                                   std::make_unique<AudioParameterChoice>("slot4","Slot 4", processorChoises, 0),
+                                                   
+                                                   std::make_unique<AudioParameterBool> ("mute","Mute Input", true),
+                                                   
+                                                   std::make_unique<AudioParameterBool> ("bypass1", "Bypass 1", false),
+                                                   std::make_unique<AudioParameterBool> ("bypass2", "Bypass 2", false),
+                                                   std::make_unique<AudioParameterBool> ("bypass3", "Bypass 3", false),
+                                                   std::make_unique<AudioParameterBool> ("bypass4", "Bypass 4", false)));
     
-    parameters.push_back(std::make_unique<AudioParameterChoice>("slot1","Slot 1", processorChoises, 0));
-    parameters.push_back(std::make_unique<AudioParameterChoice>("slot2","Slot 2", processorChoises, 0));
-    parameters.push_back(std::make_unique<AudioParameterChoice>("slot3","Slot 3", processorChoises, 0));
-    parameters.push_back(std::make_unique<AudioParameterChoice>("slot4","Slot 4", processorChoises, 0));
-    
-    parameters.push_back(std::make_unique<AudioParameterBool> ("mute","Mute Input", true));
-    
-    parameters.push_back(std::make_unique<AudioParameterBool> ("bypass1", "Bypass 1", false));
-    parameters.push_back(std::make_unique<AudioParameterBool> ("bypass2", "Bypass 2", false));
-    parameters.push_back(std::make_unique<AudioParameterBool> ("bypass3", "Bypass 3", false));
-    parameters.push_back(std::make_unique<AudioParameterBool> ("bypass4", "Bypass 4", false));
-
-    return {parameters.begin(), parameters.end()};
+       
+    parameterGroups.push_back(SVFProcessor::makeParamGroup("1"));
+    parameterGroups.push_back(SVFProcessor::makeParamGroup("2"));
+    parameterGroups.push_back(SVFProcessor::makeParamGroup("3"));
+    parameterGroups.push_back(SVFProcessor::makeParamGroup("4"));
+    return {parameterGroups.begin(), parameterGroups.end()};
 }
 
 //==============================================================================
@@ -334,7 +341,7 @@ void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, flo
     }
     else if (choice == "Filter")
     {
-        setSlotNode(paramIndex ,std::make_unique<SVFProcessor>());
+        setSlotNode(paramIndex ,std::make_unique<SVFProcessor>(mainTree, paramIndex));
     }
     else if (choice == "Phaser")
     {
