@@ -349,7 +349,7 @@ void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, flo
     }
     else if (choice == "Distortion")
     {
-        setSlotNode(paramIndex, std::make_unique<ProcessorBase>());
+        setSlotNode(paramIndex, std::make_unique<DistortionProcessor>(mainTree,paramIndex));
     }
     
     
