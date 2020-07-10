@@ -25,7 +25,6 @@ DistortionProcessor::DistortionProcessor (AudioProcessorValueTreeState& apvts , 
     
     auto& postGain = processorChain.template get<postGainIndex>();
     postGain.setGainDecibels(-20.0f);
-    
 }
 
 DistortionProcessor::~DistortionProcessor ()
@@ -46,13 +45,57 @@ void DistortionProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 void DistortionProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
     dsp::AudioBlock<float> block (buffer);
+    updateGain();
     processorChain.process(dsp::ProcessContextReplacing<float> (block));
 }
 std::unique_ptr<AudioProcessorParameterGroup> DistortionProcessor::makeParamGroup (String slotIndex)
 {
-    
+
+    return std::make_unique<AudioProcessorParameterGroup> ("distortion" + slotIndex,
+                                                           "Distortion " + slotIndex,
+                                                           "Seperator",
+                                                           std::make_unique<AudioParameterFloat>("drive" + slotIndex,
+                                                                                                 "Drive" + slotIndex,
+                                                                                                 NormalisableRange<float> (0.0f,
+                                                                                                                           50.0f,
+                                                                                                                              0.1f,
+                                                                                                                              1
+                                                                                                                              )
+                                                                                                 ,
+                                                                                                 0.0f,
+                                                                                                 "dB",
+                                                                                                 AudioProcessorParameter::genericParameter,
+                                                                                                 nullptr,
+                                                                                                 nullptr
+                                                                                                 ),
+                                                           std::make_unique<AudioParameterFloat>("distortionGain" + slotIndex,
+                                                           "Distortion Gain " + slotIndex,
+                                                           NormalisableRange<float> (-100.0f,
+                                                                                     0.0f,
+                                                                                        0.1f,
+                                                                                        1
+                                                                                        )
+                                                           ,
+                                                           0.0f,
+                                                           "dB",
+                                                           AudioProcessorParameter::genericParameter,
+                                                           nullptr,
+                                                           nullptr
+                                                           )
+                                                           );
 }
 
 
 
 
+
+void DistortionProcessor::updateGain()
+{
+    float drive = *apvts.getRawParameterValue("drive" + slotIndex);
+    float gain = *apvts.getRawParameterValue("distortionGain" + slotIndex);
+    auto& preGain = processorChain.template get<preGainIndex>();
+    preGain.setGainDecibels(drive);
+    
+    auto& postGain = processorChain.template get<postGainIndex>();
+    postGain.setGainDecibels(gain);
+}

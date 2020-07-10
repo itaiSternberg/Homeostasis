@@ -20,7 +20,7 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
     static std::unique_ptr<AudioProcessorParameterGroup> makeParamGroup (String slotIndex);
-
+    
 private:
     
     AudioProcessorValueTreeState& apvts;
@@ -32,4 +32,6 @@ private:
     
     String slotIndex;
     juce::dsp::ProcessorChain<juce::dsp::Gain<float>,juce::dsp::WaveShaper<float>,juce::dsp::Gain<float>> processorChain;
+    void updateGain();
+
 };

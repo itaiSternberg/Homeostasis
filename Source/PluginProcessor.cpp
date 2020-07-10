@@ -258,6 +258,13 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
     parameterGroups.push_back(SVFProcessor::makeParamGroup("2"));
     parameterGroups.push_back(SVFProcessor::makeParamGroup("3"));
     parameterGroups.push_back(SVFProcessor::makeParamGroup("4"));
+
+    parameterGroups.push_back(DistortionProcessor::makeParamGroup("1"));
+    parameterGroups.push_back(DistortionProcessor::makeParamGroup("2"));
+    parameterGroups.push_back(DistortionProcessor::makeParamGroup("3"));
+    parameterGroups.push_back(DistortionProcessor::makeParamGroup("4"));
+    
+    
     return {parameterGroups.begin(), parameterGroups.end()};
 }
 
