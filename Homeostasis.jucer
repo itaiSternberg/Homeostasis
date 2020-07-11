@@ -21,6 +21,8 @@
       <FILE id="V7wetv" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="rouFIm" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="UaVDjl" name="Distortion.cpp" compile="1" resource="0" file="Source/Distortion.cpp"/>
+      <FILE id="skWqZO" name="Distortion.h" compile="0" resource="0" file="Source/Distortion.h"/>
       <FILE id="yRS7jF" name="SVF.cpp" compile="1" resource="0" file="Source/SVF.cpp"/>
       <FILE id="TxkQT8" name="SVF.h" compile="0" resource="0" file="Source/SVF.h"/>
       <FILE id="zHKyMu" name="Slot.cpp" compile="1" resource="0" file="Source/Slot.cpp"/>

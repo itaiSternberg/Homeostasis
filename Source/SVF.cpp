@@ -32,8 +32,8 @@ SVF::SVF(AudioProcessorValueTreeState& apvts, String slotIndex)
     mFilterTypeAttach = std::make_unique<ComboBoxAttachment> (apvts, "filterType" + slotIndex, mFilterTypeBox);
     
     
-    addAndMakeVisible(cutOffFreqLabel);
-    addAndMakeVisible(resonanceLabel);
+    addAndMakeVisible(&cutOffFreqLabel);
+    addAndMakeVisible(&resonanceLabel);
 
 }
 

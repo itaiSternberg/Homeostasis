@@ -73,7 +73,9 @@ void Slot::comboBoxChanged(ComboBox* ComboBox)
         selectedFx = std::make_unique<Label> ("","Phaser");
     } else if (ComboBox->getText() == "Distortion")
     {
-        selectedFx = std::make_unique<Label> ("","Distortion");
+        selectedFx = std::make_unique<Distortion> (apvts, slotIndex);
+        is_label = false;
+
     }
     
     Component::addAndMakeVisible(selectedFx.get());
