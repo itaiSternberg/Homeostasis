@@ -5,6 +5,8 @@
   <MAINGROUP id="lvXMxC" name="Homeostasis">
     <GROUP id="{4C325697-144E-A12A-0B03-8AB6CD45DF0D}" name="Source">
       <GROUP id="{EB4C6215-54D1-520D-19B8-4A3C2F7C5A86}" name="DSP">
+        <FILE id="O2S4gW" name="Wavetable.cpp" compile="1" resource="0" file="Source/Wavetable.cpp"/>
+        <FILE id="JyJdkZ" name="Wavetable.h" compile="0" resource="0" file="Source/Wavetable.h"/>
         <FILE id="tlS66g" name="ProcessorBase.h" compile="0" resource="0" file="Source/ProcessorBase.h"/>
         <FILE id="GPQwgN" name="DistortionProcessor.cpp" compile="1" resource="0"
               file="Source/DistortionProcessor.cpp"/>
@@ -21,12 +23,14 @@
       <FILE id="V7wetv" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="rouFIm" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
-      <FILE id="UaVDjl" name="Distortion.cpp" compile="1" resource="0" file="Source/Distortion.cpp"/>
-      <FILE id="skWqZO" name="Distortion.h" compile="0" resource="0" file="Source/Distortion.h"/>
-      <FILE id="yRS7jF" name="SVF.cpp" compile="1" resource="0" file="Source/SVF.cpp"/>
-      <FILE id="TxkQT8" name="SVF.h" compile="0" resource="0" file="Source/SVF.h"/>
-      <FILE id="zHKyMu" name="Slot.cpp" compile="1" resource="0" file="Source/Slot.cpp"/>
-      <FILE id="MWHtcn" name="Slot.h" compile="0" resource="0" file="Source/Slot.h"/>
+      <GROUP id="{58B2BD45-0BE0-0455-5054-046F2E4C2B22}" name="GUI">
+        <FILE id="UaVDjl" name="Distortion.cpp" compile="1" resource="0" file="Source/Distortion.cpp"/>
+        <FILE id="skWqZO" name="Distortion.h" compile="0" resource="0" file="Source/Distortion.h"/>
+        <FILE id="yRS7jF" name="SVF.cpp" compile="1" resource="0" file="Source/SVF.cpp"/>
+        <FILE id="TxkQT8" name="SVF.h" compile="0" resource="0" file="Source/SVF.h"/>
+        <FILE id="zHKyMu" name="Slot.cpp" compile="1" resource="0" file="Source/Slot.cpp"/>
+        <FILE id="MWHtcn" name="Slot.h" compile="0" resource="0" file="Source/Slot.h"/>
+      </GROUP>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>

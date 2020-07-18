@@ -213,7 +213,7 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 void HomeostasisAudioProcessor::initialiseFeedbackGraph () // helper function which initialises the processing chains
  {
-     feedbackInputNode = feedbackProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(AudioGraphIOProcessor::audioInputNode));
+     feedbackInputNode = feedbackProcessor->addNode(std::make_unique<Wavetable>());
      feedbackOutpoutNode = feedbackProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(AudioGraphIOProcessor::audioOutputNode));
      feedbackNode1 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
      setNodesConfig(feedbackNode1);
