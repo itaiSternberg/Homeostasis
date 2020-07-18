@@ -5,6 +5,8 @@
   <MAINGROUP id="lvXMxC" name="Homeostasis">
     <GROUP id="{4C325697-144E-A12A-0B03-8AB6CD45DF0D}" name="Source">
       <GROUP id="{EB4C6215-54D1-520D-19B8-4A3C2F7C5A86}" name="DSP">
+        <FILE id="IqpANi" name="DelayLine.cpp" compile="1" resource="0" file="Source/DelayLine.cpp"/>
+        <FILE id="rlFTQJ" name="DelayLine.h" compile="0" resource="0" file="Source/DelayLine.h"/>
         <FILE id="O2S4gW" name="Wavetable.cpp" compile="1" resource="0" file="Source/Wavetable.cpp"/>
         <FILE id="JyJdkZ" name="Wavetable.h" compile="0" resource="0" file="Source/Wavetable.h"/>
         <FILE id="tlS66g" name="ProcessorBase.h" compile="0" resource="0" file="Source/ProcessorBase.h"/>
