@@ -24,8 +24,6 @@ HomeostasisAudioProcessor::HomeostasisAudioProcessor()
                        ),
         processorChoises({"Empty","Filter","Phaser","Distortion"})
         , mainTree(*this, nullptr, "SlotsParameters", MainTreeLayout())
-        , feedbackProcessor(std::make_unique<AudioProcessorGraph>())
-        
 #endif
 {
     mainTree.state.addListener(this);
@@ -104,18 +102,18 @@ void HomeostasisAudioProcessor::changeProgramName (int index, const String& newN
 //==============================================================================
 void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    feedbackProcessor->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels() , sampleRate, samplesPerBlock);
-
-    feedbackProcessor->prepareToPlay(sampleRate, samplesPerBlock);
-    
-    initialiseFeedbackGraph();
+    dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = uint32 (getTotalNumOutputChannels());
+    chain.prepare(spec);
 }
 
 void HomeostasisAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
-    feedbackProcessor->releaseResources();
+    chain.reset();
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -158,8 +156,9 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
         buffer.clear (i, 0, buffer.getNumSamples());
     
     
-    
-    feedbackProcessor->processBlock(buffer, midiMessages);
+    auto block = juce::dsp::AudioBlock<float>(buffer);
+    auto context = juce::dsp::ProcessContextReplacing<float>(block);
+    chain.process(context);
     
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -211,24 +210,6 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new HomeostasisAudioProcessor();
 }
 
-void HomeostasisAudioProcessor::initialiseFeedbackGraph () // helper function which initialises the processing chains
- {
-     feedbackInputNode = feedbackProcessor->addNode(std::make_unique<Wavetable>());
-     feedbackOutpoutNode = feedbackProcessor->addNode(std::make_unique<AudioGraphIOProcessor>(AudioGraphIOProcessor::audioOutputNode));
-     feedbackNode1 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
-     setNodesConfig(feedbackNode1);
-    
-     feedbackNode2 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
-     setNodesConfig(feedbackNode2);
-     
-     feedbackNode3 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
-     setNodesConfig(feedbackNode3);
-
-     feedbackNode4 = feedbackProcessor->addNode(std::make_unique<ProcessorBase>());
-     setNodesConfig(feedbackNode4);
-
-     makeSlotConnections();
- }
 
 
 
@@ -270,97 +251,18 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
 
 //==============================================================================
 
-void HomeostasisAudioProcessor::setSlotNode(int index, std::unique_ptr<AudioProcessor> processor)
-{
-    if (index == 0)
-    {
-        feedbackNode1 = feedbackProcessor->addNode(std::move(processor));
-    }
-    else if (index == 1)
-    {
-        feedbackNode2 = feedbackProcessor->addNode(std::move(processor));
-    }
-    else if (index == 2)
-    {
-        feedbackNode3 = feedbackProcessor->addNode(std::move(processor));
-    }
-    else if (index == 3)
-    {
-        feedbackNode4 = feedbackProcessor->addNode(std::move(processor));
-    }
-    
-    updateHostDisplay();
-    
-    for (auto node : feedbackProcessor->getNodes())
-    {
-        setNodesConfig(node);
-    }
-}
 
-void HomeostasisAudioProcessor::setNodesConfig (Node::Ptr node)
-{
-    node->getProcessor()->setPlayConfigDetails(getMainBusNumOutputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
-}
-
-void HomeostasisAudioProcessor::makeSlotConnections ()
-{
-    constexpr auto left = 0;
-    constexpr auto right = 1;
-    
-    feedbackProcessor->addConnection({{feedbackInputNode->nodeID,left},{feedbackNode1->nodeID,left}});
-    feedbackProcessor->addConnection({{feedbackInputNode->nodeID,right},{feedbackNode1->nodeID,right}});
-    
-    
-    feedbackProcessor->addConnection({{feedbackNode1->nodeID,left},{feedbackNode2->nodeID,left}});
-    feedbackProcessor->addConnection({{feedbackNode1->nodeID,right},{feedbackNode2->nodeID,right}});
-    
-    feedbackProcessor->addConnection({{feedbackNode2->nodeID,left},{feedbackNode3->nodeID,left}});
-    feedbackProcessor->addConnection({{feedbackNode2->nodeID,right},{feedbackNode3->nodeID,right}});
-
-    
-    feedbackProcessor->addConnection({{feedbackNode3->nodeID,left},{feedbackNode4->nodeID,left}});
-    feedbackProcessor->addConnection({{feedbackNode3->nodeID,right},{feedbackNode4->nodeID,right}});
-
-    
-    feedbackProcessor->addConnection({{feedbackNode4->nodeID,left},{feedbackOutpoutNode->nodeID,left}});
-    feedbackProcessor->addConnection({{feedbackNode4->nodeID,right},{feedbackOutpoutNode->nodeID,right}});
-
-    for (auto node : feedbackProcessor->getNodes())
-    {
-        node->getProcessor()->enableAllBuses();
-    }
-    
-}
 void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
     
-    for (auto connection : feedbackProcessor->getConnections())
-    {
-        feedbackProcessor->removeConnection(connection);
-    }
+    
 
 //========================== Check which processor chosen and instantiate it.
     String choice = processorChoises.getReference(newValue);
     int paramIndex = mainTree.getParameter(parameterID)->getParameterIndex();
-    if (choice == "Empty")
-    {
-        setSlotNode(paramIndex, std::make_unique<ProcessorBase>());
-    }
-    else if (choice == "Filter")
-    {
-        setSlotNode(paramIndex ,std::make_unique<SVFProcessor>(mainTree, paramIndex));
-    }
-    else if (choice == "Phaser")
-    {
-        setSlotNode(paramIndex, std::make_unique<ProcessorBase>());
-    }
-    else if (choice == "Distortion")
-    {
-        setSlotNode(paramIndex, std::make_unique<DistortionProcessor>(mainTree,paramIndex));
-    }
     
-    
-    makeSlotConnections();
+    auto& feedbackGraph = chain.get<feedbackGraphIndex>();
+    feedbackGraph.processorChanged(choice, paramIndex, mainTree);
 
 
 }

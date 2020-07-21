@@ -13,6 +13,7 @@
 #include "SVFProcessor.h"
 #include "DistortionProcessor.h"
 #include "Wavetable.h"
+#include "FeedbackGraph.h"
 
 //==============================================================================
 /**
@@ -69,26 +70,15 @@ public:
 
 private:
  //==============================================================================
-    void initialiseFeedbackGraph ();
-    void setNodesConfig (Node::Ptr node);
     std::vector<std::unique_ptr<RangedAudioParameter>> mParameters;
-   
-    void setSlotNode(int index, std::unique_ptr<AudioProcessor> processor);
-    void makeSlotConnections ();
+
     void parameterChanged(const String &parameterID, float newValue) override;
     
-    std::unique_ptr<AudioProcessorGraph> feedbackProcessor; // this is the feedback loop chain
-    Node::Ptr feedbackInputNode;                            // this is the feedback loop input
-    Node::Ptr feedbackOutpoutNode;                          // this is the feedback loop Output
-    
-    Node::Ptr feedbackNode1;
-    Node::Ptr feedbackNode2;
-    Node::Ptr feedbackNode3;
-    Node::Ptr feedbackNode4;
-    
-    int mNumberOfSlots {4};
-    
-    std::atomic <bool> shouldUpdate {false};
+    enum {
+        feedbackGraphIndex
+    };
+  
+    juce::dsp::ProcessorChain<feedbackGraph> chain;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessor)
 };
 

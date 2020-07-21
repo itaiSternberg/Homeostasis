@@ -13,6 +13,7 @@
               file="Source/DistortionProcessor.cpp"/>
         <FILE id="AxvRWz" name="DistortionProcessor.h" compile="0" resource="0"
               file="Source/DistortionProcessor.h"/>
+        <FILE id="GVvoY9" name="FeedbackGraph.h" compile="0" resource="0" file="Source/FeedbackGraph.h"/>
         <FILE id="b4l6F3" name="SVFProcessor.cpp" compile="1" resource="0"
               file="Source/SVFProcessor.cpp"/>
         <FILE id="C4UBNw" name="SVFProcessor.h" compile="0" resource="0" file="Source/SVFProcessor.h"/>
