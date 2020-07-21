@@ -11,33 +11,35 @@
 #include "Wavetable.h"
 Wavetable::Wavetable ()
 : random()
+,randomTable(chain.get<oscIndex>())
 {
-    randomTable.setFrequency(440.0f);
+    
+    randomTable.setFrequency(30.0f);
     randomTable.initialise([this] (float x) {if (random.nextInt() % 2 == 0) {return -x;} { return x;} });
+    chain.get<gainIndex>().setGainLinear(0.05);
 }
 
 
 Wavetable::~Wavetable()
 {
-    
 }
 
 void Wavetable::prepareToPlay (double sampleRate, int samplesPerBlock)
     {
         juce::dsp::ProcessSpec spec { sampleRate, static_cast<juce::uint32> (samplesPerBlock) };
-        randomTable.prepare (spec);
+        chain.prepare (spec);
     }
 
 void Wavetable::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer&)
     {
         juce::dsp::AudioBlock<float> block (buffer);
         juce::dsp::ProcessContextReplacing<float> context (block);
-        randomTable.process (context);
+        chain.process (context);
     }
 
 void    Wavetable::reset()
     {
-        randomTable.reset();
+        chain.reset();
     }
 
 //void Wavetable::createWavetable()

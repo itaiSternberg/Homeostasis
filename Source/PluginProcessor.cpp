@@ -299,7 +299,7 @@ void HomeostasisAudioProcessor::setSlotNode(int index, std::unique_ptr<AudioProc
 
 void HomeostasisAudioProcessor::setNodesConfig (Node::Ptr node)
 {
-    node->getProcessor()->setPlayConfigDetails(getMainBusNumInputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
+    node->getProcessor()->setPlayConfigDetails(getMainBusNumOutputChannels(), getMainBusNumOutputChannels(), getSampleRate(), getBlockSize());
 }
 
 void HomeostasisAudioProcessor::makeSlotConnections ()

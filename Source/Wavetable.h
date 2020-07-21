@@ -21,8 +21,13 @@ public:
     void reset() override;
 
 private:
-    juce::dsp::Oscillator<float> randomTable;
-    
     Random random;
+    enum
+    {
+        oscIndex,
+        gainIndex
+    };
+    dsp::ProcessorChain<dsp::Oscillator<float>,dsp::Gain<float>> chain;
+    dsp::Oscillator<float>& randomTable;
 };
 #pragma once
