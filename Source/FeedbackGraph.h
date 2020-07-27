@@ -13,6 +13,7 @@
 #include "SVFProcessor.h"
 #include "DistortionProcessor.h"
 #include "Wavetable.h"
+#include "PhaserProcessor.h"
 
 
 class feedbackGraph
@@ -48,51 +49,59 @@ public:
     }
         void initialiseGraph () // helper function which initialises the processing chains
     {
-        InputNode = graph.addNode(std::make_unique<Wavetable>());
-        OutpoutNode = graph.addNode(std::make_unique<AudioGraphIOProcessor>(AudioGraphIOProcessor::audioOutputNode));
-        Node1 = graph.addNode(std::make_unique<ProcessorBase>());
-        setNodesConfig(Node1);
+        inputNode = graph.addNode(std::make_unique<Wavetable>());
+        outputNode = graph.addNode(std::make_unique<AudioGraphIOProcessor>(AudioGraphIOProcessor::audioOutputNode));
+        node1 = graph.addNode(std::make_unique<ProcessorBase>());
+        setNodesConfig(node1);
        
-        Node2 = graph.addNode(std::make_unique<ProcessorBase>());
-        setNodesConfig(Node2);
+        node2 = graph.addNode(std::make_unique<ProcessorBase>());
+        setNodesConfig(node2);
         
-        Node3 = graph.addNode(std::make_unique<ProcessorBase>());
-        setNodesConfig(Node3);
+        node3 = graph.addNode(std::make_unique<ProcessorBase>());
+        setNodesConfig(node3);
 
-        Node4 = graph.addNode(std::make_unique<ProcessorBase>());
-        setNodesConfig(Node4);
+        node4 = graph.addNode(std::make_unique<ProcessorBase>());
+        setNodesConfig(node4);
+        feedbackNode = graph.addNode(std::make_unique<ProcessorBase>());
+        setNodesConfig(feedbackNode);
 
         makeSlotConnections();
+     
     }
 
     void setNodesConfig (Node::Ptr node)
     {
         node->getProcessor()->setPlayConfigDetails(numChannels, numChannels, sampleRate, maxBlockSize);
     }
+    
+    void setAllNodesConfig (const ReferenceCountedArray<Node>& nodes)
+    {
+        for (auto node : nodes)
+               {
+                   setNodesConfig(node);
+               }
+    }
 
     void setSlotNode(int index, std::unique_ptr<AudioProcessor> processor)
     {
         if (index == 0)
         {
-            Node1 = graph.addNode(std::move(processor));
+            node1 = graph.addNode(std::move(processor));
         }
         else if (index == 1)
         {
-            Node2 = graph.addNode(std::move(processor));
+            node2 = graph.addNode(std::move(processor));
         }
         else if (index == 2)
         {
-            Node3 = graph.addNode(std::move(processor));
+            node3 = graph.addNode(std::move(processor));
         }
         else if (index == 3)
         {
-            Node4 = graph.addNode(std::move(processor));
+            node4 = graph.addNode(std::move(processor));
         }
 
-        for (auto node : graph.getNodes())
-        {
-            setNodesConfig(node);
-        }
+        setAllNodesConfig(graph.getNodes());
     }
 
     void makeSlotConnections ()
@@ -100,23 +109,29 @@ public:
         constexpr auto left = 0;
         constexpr auto right = 1;
 
-        graph.addConnection({{InputNode->nodeID,left},{Node1->nodeID,left}});
-        graph.addConnection({{InputNode->nodeID,right},{Node1->nodeID,right}});
+        graph.addConnection({{inputNode->nodeID, left},{node1->nodeID, left}});
+        graph.addConnection({{inputNode->nodeID, right},{node1->nodeID, right}});
 
 
-        graph.addConnection({{Node1->nodeID,left},{Node2->nodeID,left}});
-        graph.addConnection({{Node1->nodeID,right},{Node2->nodeID,right}});
+        graph.addConnection({{node1->nodeID, left},{node2->nodeID, left}});
+        graph.addConnection({{node1->nodeID, right},{node2->nodeID, right}});
 
-        graph.addConnection({{Node2->nodeID,left},{Node3->nodeID,left}});
-        graph.addConnection({{Node2->nodeID,right},{Node3->nodeID,right}});
-
-
-        graph.addConnection({{Node3->nodeID,left},{Node4->nodeID,left}});
-        graph.addConnection({{Node3->nodeID,right},{Node4->nodeID,right}});
+        graph.addConnection({{node2->nodeID, left},{node3->nodeID, left}});
+        graph.addConnection({{node2->nodeID, right},{node3->nodeID, right}});
 
 
-        graph.addConnection({{Node4->nodeID,left},{OutpoutNode->nodeID,left}});
-        graph.addConnection({{Node4->nodeID,right},{OutpoutNode->nodeID,right}});
+        graph.addConnection({{node3->nodeID, left},{node4->nodeID, left}});
+        graph.addConnection({{node3->nodeID, right},{node4->nodeID, right}});
+
+
+        graph.addConnection({{node4->nodeID, left},{outputNode->nodeID, left}});
+        graph.addConnection({{node4->nodeID, right},{outputNode->nodeID, right}});
+        
+        graph.addConnection({{node4->nodeID, left},{feedbackNode->nodeID, left}});
+        graph.addConnection({{node4->nodeID, right},{feedbackNode->nodeID, right}});
+
+        graph.addConnection({{feedbackNode->nodeID, left},{inputNode->nodeID, left}});
+        graph.addConnection({{feedbackNode->nodeID, right},{inputNode->nodeID, right}});
 
         for (auto node : graph.getNodes())
         {
@@ -132,9 +147,7 @@ public:
             {
                 graph.removeConnection(connection);
             }
-
-
-           
+          
             if (choice == "Empty")
             {
                 setSlotNode(paramIndex, std::make_unique<ProcessorBase>());
@@ -145,7 +158,7 @@ public:
             }
             else if (choice == "Phaser")
             {
-                setSlotNode(paramIndex, std::make_unique<ProcessorBase>());
+                setSlotNode(paramIndex, std::make_unique<PhaserProcessor>(tree, paramIndex));
             }
             else if (choice == "Distortion")
             {
@@ -160,13 +173,13 @@ private:
     AudioBuffer<float> buffer;
     MidiBuffer midiBuffer;
     
-    Node::Ptr InputNode;                            // this is the feedback loop input
-    Node::Ptr OutpoutNode;
-    Node::Ptr Node1;
-    Node::Ptr Node2;
-    Node::Ptr Node3;
-    Node::Ptr Node4;
-    
+    Node::Ptr inputNode;                            // this is the feedback loop input
+    Node::Ptr outputNode;
+    Node::Ptr node1;
+    Node::Ptr node2;
+    Node::Ptr node3;
+    Node::Ptr node4;
+    Node::Ptr feedbackNode;
     
     uint32 numChannels;
     uint32 maxBlockSize;

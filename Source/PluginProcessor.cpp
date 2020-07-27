@@ -245,6 +245,10 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
     parameterGroups.push_back(DistortionProcessor::makeParamGroup("3"));
     parameterGroups.push_back(DistortionProcessor::makeParamGroup("4"));
     
+    parameterGroups.push_back(PhaserProcessor::makeParamGroup("1"));
+    parameterGroups.push_back(PhaserProcessor::makeParamGroup("2"));
+    parameterGroups.push_back(PhaserProcessor::makeParamGroup("3"));
+    parameterGroups.push_back(PhaserProcessor::makeParamGroup("4"));
     
     return {parameterGroups.begin(), parameterGroups.end()};
 }

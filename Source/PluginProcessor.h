@@ -10,10 +10,8 @@
 
 #pragma once
 #include <JuceHeader.h>
-#include "SVFProcessor.h"
-#include "DistortionProcessor.h"
-#include "Wavetable.h"
 #include "FeedbackGraph.h"
+
 
 //==============================================================================
 /**

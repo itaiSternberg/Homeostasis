@@ -57,25 +57,26 @@ void Slot::resized()
 
 void Slot::comboBoxChanged(ComboBox* ComboBox)
 {
-    bool is_label = true;
+    bool is_label = false;
     Component::removeChildComponent(selectedFx.get());
     selectedFx = nullptr;
     
     if (ComboBox->getText() == "Empty")
     {
         selectedFx = std::make_unique<Label> ("","Empty");
+        is_label = true;
     } else if (ComboBox->getText() == "Filter")
+    
     {
         selectedFx = std::make_unique<SVF> (apvts, slotIndex);
-        is_label = false;
     } else if (ComboBox->getText() == "Phaser")
+    
     {
-        selectedFx = std::make_unique<Label> ("","Phaser");
+        selectedFx = std::make_unique<Phaser> (apvts, slotIndex);
     } else if (ComboBox->getText() == "Distortion")
+    
     {
         selectedFx = std::make_unique<Distortion> (apvts, slotIndex);
-        is_label = false;
-
     }
     
     Component::addAndMakeVisible(selectedFx.get());

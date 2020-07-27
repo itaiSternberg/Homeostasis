@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "SVF.h"
 #include "Distortion.h"
+#include "Phaser.h"
 //==============================================================================
 /*
 */

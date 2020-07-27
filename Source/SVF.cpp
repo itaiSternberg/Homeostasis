@@ -16,7 +16,7 @@ SVF::SVF(AudioProcessorValueTreeState& apvts, String slotIndex)
 , mResonanceSlider(Slider::SliderStyle::RotaryVerticalDrag,Slider::NoTextBox)
 , mFilterTypeBox("Filter Type")
 , cutOffFreqLabel("cuttoffFreqLabel", "Cutoff")
-,resonanceLabel("resonanceLabel", "Res.")
+, resonanceLabel("resonanceLabel", "Res.")
 
 {
     Array<String> filterTypes {"HP","LP","BP"};
