@@ -250,6 +250,8 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
     parameterGroups.push_back(PhaserProcessor::makeParamGroup("3"));
     parameterGroups.push_back(PhaserProcessor::makeParamGroup("4"));
     
+    parameterGroups.push_back(FeedbackProcessor::makeParamGroup());
+
     return {parameterGroups.begin(), parameterGroups.end()};
 }
 

@@ -23,7 +23,7 @@ std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (Stri
 {
     return std::make_unique<AudioProcessorParameterGroup> ("filter" + slotIndex,
                                         "Filter" + slotIndex,
-                                        "seperator",
+                                        "|",
                                         std::make_unique<AudioParameterFloat>("cutoff" + slotIndex,
                                                                                   "Cutoff Frequency " + slotIndex,
                                                                                   NormalisableRange<float>(
@@ -34,7 +34,7 @@ std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (Stri
                                                                                                            false
                                                                                                            ),
                                                                                   500.0f,
-                                                                                  String(),
+                                                                                  "hz",
                                                                                   AudioProcessorParameter::genericParameter,
                                                                                   nullptr,
                                                                                   nullptr),
@@ -78,7 +78,6 @@ void SVFProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 void SVFProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
    
-//    buffer.setSize(getMainBusNumInputChannels(), buffer.getNumSamples());
 
     dsp::AudioBlock<float> block (buffer);
     updateFilter();

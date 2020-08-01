@@ -43,5 +43,7 @@ private:
     std::unique_ptr<ComboBoxAttachment> feedbackSlot3Attachment;
     std::unique_ptr<ComboBoxAttachment> feedbackSlot4Attachment;
     
+    Slider delaySlider;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessorEditor)
 };

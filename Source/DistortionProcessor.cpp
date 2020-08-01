@@ -53,7 +53,7 @@ std::unique_ptr<AudioProcessorParameterGroup> DistortionProcessor::makeParamGrou
 
     return std::make_unique<AudioProcessorParameterGroup> ("distortion" + slotIndex,
                                                            "Distortion " + slotIndex,
-                                                           "Seperator",
+                                                           "|",
                                                            std::make_unique<AudioParameterFloat>("drive" + slotIndex,
                                                                                                  "Drive" + slotIndex,
                                                                                                  NormalisableRange<float> (0.0f,

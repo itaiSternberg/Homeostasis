@@ -36,7 +36,7 @@ std::unique_ptr<AudioProcessorParameterGroup> PhaserProcessor::makeParamGroup (S
     return std::make_unique<AudioProcessorParameterGroup> (
                                                            "phaser" + slotIndex,
                                                            "Phaser" + slotIndex,
-                                                           "seperator",
+                                                           "|",
                                                            std::make_unique<AudioParameterFloat>("phaserFreq" + slotIndex,
                                                                                                  "Phaser Freq " + slotIndex,
                                                                                                  NormalisableRange<float>(
@@ -47,7 +47,7 @@ std::unique_ptr<AudioProcessorParameterGroup> PhaserProcessor::makeParamGroup (S
                                                                                                                           false
                                                                                                                           ),
                                                                                                  1000.0f,
-                                                                                                 String(),
+                                                                                                 "Hz",
                                                                                                  AudioProcessorParameter::genericParameter,
                                                                                                  nullptr,
                                                                                                  nullptr),
@@ -62,7 +62,7 @@ std::unique_ptr<AudioProcessorParameterGroup> PhaserProcessor::makeParamGroup (S
                                                                                                                            false
                                                                                                                            ),
                                                                                                   0.02f,
-                                                                                                  String(),
+                                                                                                  "Hz",
                                                                                                   AudioProcessorParameter::genericParameter,
                                                                                                   nullptr,
                                                                                                   nullptr),

@@ -6,6 +6,10 @@
     <GROUP id="{4C325697-144E-A12A-0B03-8AB6CD45DF0D}" name="Source">
       <GROUP id="{EB4C6215-54D1-520D-19B8-4A3C2F7C5A86}" name="DSP">
         <GROUP id="{88FD7502-4BA1-9310-C954-21B31F02B288}" name="Processors">
+          <FILE id="qSqt1Q" name="FeedbackProcessor.cpp" compile="1" resource="0"
+                file="Source/FeedbackProcessor.cpp"/>
+          <FILE id="e4wKtG" name="FeedbackProcessor.h" compile="0" resource="0"
+                file="Source/FeedbackProcessor.h"/>
           <FILE id="u2q6Pv" name="PhaserProcessor.cpp" compile="1" resource="0"
                 file="Source/PhaserProcessor.cpp"/>
           <FILE id="qoNaaw" name="PhaserProcessor.h" compile="0" resource="0"
@@ -17,6 +21,9 @@
                 file="Source/DistortionProcessor.cpp"/>
           <FILE id="b4l6F3" name="SVFProcessor.cpp" compile="1" resource="0"
                 file="Source/SVFProcessor.cpp"/>
+          <FILE id="ve7a1l" name="SynthSound.h" compile="0" resource="0" file="Source/SynthSound.h"/>
+          <FILE id="Xy8D5Q" name="AudioSource.h" compile="0" resource="0" file="Source/AudioSource.h"/>
+          <FILE id="Lcz8eU" name="SynthVoice.h" compile="0" resource="0" file="Source/SynthVoice.h"/>
           <FILE id="C4UBNw" name="SVFProcessor.h" compile="0" resource="0" file="Source/SVFProcessor.h"/>
         </GROUP>
         <FILE id="rlFTQJ" name="DelayLine.h" compile="0" resource="0" file="Source/DelayLine.h"/>

@@ -14,7 +14,7 @@
 #include "DistortionProcessor.h"
 #include "Wavetable.h"
 #include "PhaserProcessor.h"
-
+#include "FeedbackProcessor.h"
 
 class feedbackGraph
 {
@@ -51,22 +51,19 @@ public:
     {
         inputNode = graph.addNode(std::make_unique<Wavetable>());
         outputNode = graph.addNode(std::make_unique<AudioGraphIOProcessor>(AudioGraphIOProcessor::audioOutputNode));
+        
         node1 = graph.addNode(std::make_unique<ProcessorBase>());
-        setNodesConfig(node1);
        
         node2 = graph.addNode(std::make_unique<ProcessorBase>());
-        setNodesConfig(node2);
         
         node3 = graph.addNode(std::make_unique<ProcessorBase>());
-        setNodesConfig(node3);
 
         node4 = graph.addNode(std::make_unique<ProcessorBase>());
         setNodesConfig(node4);
-        feedbackNode = graph.addNode(std::make_unique<ProcessorBase>());
-        setNodesConfig(feedbackNode);
+        feedbackNode = graph.addNode(std::make_unique<FeedbackProcessor>());
 
         makeSlotConnections();
-     
+        setAllNodesConfig(graph.getNodes());
     }
 
     void setNodesConfig (Node::Ptr node)
@@ -108,10 +105,11 @@ public:
     {
         constexpr auto left = 0;
         constexpr auto right = 1;
-
+        constexpr auto leftFB = 3;
+        constexpr auto rightFB = 4;
+       
         graph.addConnection({{inputNode->nodeID, left},{node1->nodeID, left}});
         graph.addConnection({{inputNode->nodeID, right},{node1->nodeID, right}});
-
 
         graph.addConnection({{node1->nodeID, left},{node2->nodeID, left}});
         graph.addConnection({{node1->nodeID, right},{node2->nodeID, right}});
@@ -119,19 +117,19 @@ public:
         graph.addConnection({{node2->nodeID, left},{node3->nodeID, left}});
         graph.addConnection({{node2->nodeID, right},{node3->nodeID, right}});
 
-
         graph.addConnection({{node3->nodeID, left},{node4->nodeID, left}});
         graph.addConnection({{node3->nodeID, right},{node4->nodeID, right}});
-
 
         graph.addConnection({{node4->nodeID, left},{outputNode->nodeID, left}});
         graph.addConnection({{node4->nodeID, right},{outputNode->nodeID, right}});
         
-        graph.addConnection({{node4->nodeID, left},{feedbackNode->nodeID, left}});
-        graph.addConnection({{node4->nodeID, right},{feedbackNode->nodeID, right}});
+//        graph.addConnection({{node4->nodeID, left},{feedbackNode->nodeID, left}});
+//        graph.addConnection({{node4->nodeID, right},{feedbackNode->nodeID, right}});
+//
+//        graph.addConnection({{feedbackNode->nodeID, leftFB},{inputNode->nodeID, left}});
+//        graph.addConnection({{feedbackNode->nodeID, rightFB},{inputNode->nodeID, right}});
 
-        graph.addConnection({{feedbackNode->nodeID, left},{inputNode->nodeID, left}});
-        graph.addConnection({{feedbackNode->nodeID, right},{inputNode->nodeID, right}});
+      
 
         for (auto node : graph.getNodes())
         {
