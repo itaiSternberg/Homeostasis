@@ -71,12 +71,8 @@ private:
     std::vector<std::unique_ptr<RangedAudioParameter>> mParameters;
 
     void parameterChanged(const String &parameterID, float newValue) override;
-    
-    enum {
-        feedbackGraphIndex
-    };
-  
-    juce::dsp::ProcessorChain<feedbackGraph> chain;
+   
+    feedbackGraph graph;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessor)
 };
 

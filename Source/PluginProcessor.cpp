@@ -102,18 +102,15 @@ void HomeostasisAudioProcessor::changeProgramName (int index, const String& newN
 //==============================================================================
 void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = uint32 (getTotalNumOutputChannels());
-    chain.prepare(spec);
+    graph.prepareToPlay(sampleRate, samplesPerBlock);
+    
 }
 
 void HomeostasisAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
-    chain.reset();
+    graph.releaseResources();
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -155,11 +152,8 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
-    
-    auto block = juce::dsp::AudioBlock<float>(buffer);
-    auto context = juce::dsp::ProcessContextReplacing<float>(block);
-    chain.process(context);
-    
+    graph.processBlock(buffer, midiMessages);
+
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
     // Make sure to reset the state if your inner loop is processing
@@ -267,8 +261,7 @@ void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, flo
     String choice = processorChoises.getReference(newValue);
     int paramIndex = mainTree.getParameter(parameterID)->getParameterIndex();
     
-    auto& feedbackGraph = chain.get<feedbackGraphIndex>();
-    feedbackGraph.processorChanged(choice, paramIndex, mainTree);
+    graph.processorChanged(choice, paramIndex, mainTree);
 
 
 }

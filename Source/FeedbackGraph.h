@@ -24,26 +24,22 @@ public:
     
     AudioProcessorGraph graph;
     
-    void prepare (const dsp::ProcessSpec& spec)
+    void prepareToPlay (double sampleRate, int samplesPerBlock)
     {
-        numChannels = spec.numChannels;
-        maxBlockSize = spec.maximumBlockSize;
-        sampleRate = spec.sampleRate;
-        buffer.setSize(numChannels, maxBlockSize);
-        graph.prepareToPlay(sampleRate, maxBlockSize);
+        maxBlockSize = samplesPerBlock;
+        graph.prepareToPlay(sampleRate, samplesPerBlock);
         graph.setPlayConfigDetails(numChannels, numChannels, sampleRate, maxBlockSize);
-        
+
         initialiseGraph();
     }
     
-    void process (dsp::ProcessContextReplacing<float>& context)
+    void processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
     {
-        auto& outputblock = context.getOutputBlock();
-        outputblock.copyTo (buffer);
-        graph.processBlock (buffer,midiBuffer);
-        outputblock.copyFrom (buffer);
+        numChannels = buffer.getNumChannels();
+        graph.processBlock (buffer,midiMessages);
+        
     }
-    void reset()
+    void releaseResources()
     {
         graph.releaseResources();
     }
@@ -60,7 +56,8 @@ public:
 
         node4 = graph.addNode(std::make_unique<ProcessorBase>());
         setNodesConfig(node4);
-        feedbackNode = graph.addNode(std::make_unique<FeedbackProcessor>());
+        
+//        feedbackNode = graph.addNode(std::make_unique<FeedbackProcessor>());
 
         makeSlotConnections();
         setAllNodesConfig(graph.getNodes());
@@ -168,8 +165,6 @@ public:
 
     }
 private:
-    AudioBuffer<float> buffer;
-    MidiBuffer midiBuffer;
     
     Node::Ptr inputNode;                            // this is the feedback loop input
     Node::Ptr outputNode;
