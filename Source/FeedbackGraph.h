@@ -45,6 +45,8 @@ public:
     }
         void initialiseGraph () // helper function which initialises the processing chains
     {
+        midiInputNode = graph.addNode (std::make_unique<AudioGraphIOProcessor> (AudioGraphIOProcessor::midiInputNode));
+
         inputNode = graph.addNode(std::make_unique<Wavetable>());
         outputNode = graph.addNode(std::make_unique<AudioGraphIOProcessor>(AudioGraphIOProcessor::audioOutputNode));
         
@@ -55,11 +57,11 @@ public:
         node3 = graph.addNode(std::make_unique<ProcessorBase>());
 
         node4 = graph.addNode(std::make_unique<ProcessorBase>());
-        setNodesConfig(node4);
         
 //        feedbackNode = graph.addNode(std::make_unique<FeedbackProcessor>());
 
         makeSlotConnections();
+        connectMidiNodes();
         setAllNodesConfig(graph.getNodes());
     }
 
@@ -100,11 +102,14 @@ public:
 
     void makeSlotConnections ()
     {
+        constexpr auto midiChannelIndex = juce::AudioProcessorGraph::midiChannelIndex;
         constexpr auto left = 0;
         constexpr auto right = 1;
         constexpr auto leftFB = 3;
         constexpr auto rightFB = 4;
-       
+        
+        graph.addConnection({{midiInputNode->nodeID, midiChannelIndex},{inputNode->nodeID, midiChannelIndex}});
+
         graph.addConnection({{inputNode->nodeID, left},{node1->nodeID, left}});
         graph.addConnection({{inputNode->nodeID, right},{node1->nodeID, right}});
 
@@ -136,6 +141,10 @@ public:
 
     }
     
+    void connectMidiNodes()
+    {
+    }
+    
     void processorChanged (String choice,int paramIndex, AudioProcessorValueTreeState& tree)         //========================== Check which processor chosen and instantiate it.
     {
          for (auto connection : graph.getConnections())
@@ -165,7 +174,7 @@ public:
 
     }
 private:
-    
+    Node::Ptr midiInputNode;
     Node::Ptr inputNode;                            // this is the feedback loop input
     Node::Ptr outputNode;
     Node::Ptr node1;

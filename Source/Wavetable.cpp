@@ -25,9 +25,13 @@ void Wavetable::prepareToPlay (double sampleRate, int samplesPerBlock)
     synthAudioSource.prepareToPlay(samplesPerBlock, sampleRate);
 }
 
-void Wavetable::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer&)
+void Wavetable::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
+    if (midiMessages.getNumEvents() > 0)
+        DBG(midiMessages.getNumEvents());
+    
     juce::AudioSourceChannelInfo info (buffer) ;
+    keyboardState.processNextMidiBuffer(midiMessages, info.startSample, info.numSamples, true);
     synthAudioSource.getNextAudioBlock(info);
 }
 

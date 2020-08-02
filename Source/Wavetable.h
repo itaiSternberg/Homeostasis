@@ -43,7 +43,7 @@ public:
         auto frequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
         auto tableSizeOverSampleRate = tableSize / getSampleRate();
         tableDelta = frequency * tableSizeOverSampleRate;
-
+        DBG(String(midiNoteNumber));
         currentIndex = 0.0f;
     }
     
@@ -71,17 +71,23 @@ public:
 
         auto frac = currentIndex - (float) index0;
 
-        auto* table = randomTable.getReadPointer(0);
-        auto value0 = table[index0];
-        auto value1 = table[index1];
+        for (auto i = 0; i < outputBuffer.getNumChannels(); ++i)
+        {
+            auto* table = randomTable.getReadPointer(i);
 
-        auto currentSample = value0 + frac * (value1 - value0);
+            auto value0 = table[index0];
+            auto value1 = table[index1];
+            auto currentSample = value0 + frac * (value1 - value0);
+            if ((currentIndex += tableDelta) > (float) tableSize)
+                currentIndex -= (float) tableSize;
 
-        if ((currentIndex += tableDelta) > (float) tableSize)
-            currentIndex -= (float) tableSize;
-
-        for (auto i = outputBuffer.getNumChannels(); --i >= 0;)
             outputBuffer.addSample (i, startSample, currentSample);
+
+        }
+        
+
+
+
 
         
     }
@@ -147,8 +153,9 @@ public:
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override
     {
         bufferToFill.clearActiveBufferRegion();
+        
         juce::MidiBuffer incomingMidi;
-        keyboardState.processNextMidiBuffer(incomingMidi, bufferToFill.startSample, bufferToFill.numSamples, true);
+//        keyboardState.processNextMidiBuffer(incomingMidi, bufferToFill.startSample, bufferToFill.numSamples, true);
         
         synth.renderNextBlock(*bufferToFill.buffer, incomingMidi, bufferToFill.startSample, bufferToFill.numSamples);
     }
@@ -173,7 +180,7 @@ public:
     bool acceptsMidi() const override {return true;}
     
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
-    void processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer&) override;
+    void processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages) override;
     void reset() override;
     
 private:
