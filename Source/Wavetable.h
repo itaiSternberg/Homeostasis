@@ -85,11 +85,6 @@ public:
 
         }
         
-
-
-
-
-        
     }
     
     void makeTable ()
@@ -104,13 +99,6 @@ public:
             samplesLeft[i] = sample;
             samplesRight[i] = sample;
         }
-        
-                for (auto j = 0; j < tableSize; ++j)
-                {
-                    auto readLeft = randomTable.getReadPointer(0);
-                    auto readRight = randomTable.getReadPointer(0);
-                    DBG(String(readLeft[j]) + " " + String (readRight[j]));
-                }
     }
     
     int randomSampleGen ()
@@ -132,42 +120,37 @@ private:
 };
 
 //============================================================
-class SynthAudioSource : public juce::AudioSource
-{
-public:
-    SynthAudioSource (juce::MidiKeyboardState& keyState)
-    : keyboardState (keyState)
-    {
-        synth.addVoice(new SynthVoice());
-        synth.addSound(new SynthSound());
-    }
-    void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override
-    {
-        synth.setCurrentPlaybackSampleRate(sampleRate);
-    }
-    
-    void releaseResources () override
-    {
-    }
-    
-    void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override
-    {
-        bufferToFill.clearActiveBufferRegion();
-        
-        juce::MidiBuffer incomingMidi;
-//        keyboardState.processNextMidiBuffer(incomingMidi, bufferToFill.startSample, bufferToFill.numSamples, true);
-        
-        synth.renderNextBlock(*bufferToFill.buffer, incomingMidi, bufferToFill.startSample, bufferToFill.numSamples);
-    }
+//class SynthAudioSource : public juce::AudioSource
+//{
+//public:
+//    SynthAudioSource (juce::MidiKeyboardState& keyState)
+//    : keyboardState (keyState)
+//    {
+//        
+//    }
+//    void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override
+//    {
+//    }
+//
+//    void releaseResources () override
+//    {
+//    }
+//
+//    void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override
+//    {
+//        bufferToFill.clearActiveBufferRegion();
+//
+//        juce::MidiBuffer incomingMidi;
+////        keyboardState.processNextMidiBuffer(incomingMidi, bufferToFill.startSample, bufferToFill.numSamples, true);
+//
+//        synth.renderNextBlock(*bufferToFill.buffer, incomingMidi, bufferToFill.startSample, bufferToFill.numSamples);
+//    }
     
     
-private:
-    
-    juce::MidiKeyboardState& keyboardState;
-    juce::Synthesiser synth;
-    float currentIndex = 0.0f, tableDelta = 0.0f;
-
-};
+//private:
+//    juce::MidiKeyboardState& keyboardState;
+//    juce::Synthesiser synth;
+//};
 
 
 
@@ -185,8 +168,7 @@ public:
     
 private:
     juce::MidiKeyboardState keyboardState;
-    SynthAudioSource synthAudioSource;
-
+    juce::Synthesiser synth;
 };
 
 
