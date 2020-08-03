@@ -43,13 +43,15 @@ public:
         auto frequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
         auto tableSizeOverSampleRate = tableSize / getSampleRate();
         tableDelta = frequency * tableSizeOverSampleRate;
-        DBG(String(midiNoteNumber));
         currentIndex = 0.0f;
     }
     
     void stopNote (float velocity, bool allowTailOff) override
     {
         clearCurrentNote();
+        tableDelta = 0.0f;
+        randomiseTable();
+
     }
     
     void pitchWheelMoved (int newPitchWheelValue) override
@@ -64,26 +66,32 @@ public:
     
     void renderNextBlock (AudioBuffer<float> &outputBuffer, int startSample, int numSamples) override
     {
-        auto tableSize = (unsigned int)  randomTable.getNumSamples();
-
-        auto index0 = (unsigned int) currentIndex;
-        auto index1 = index0 + 1;
-
-        auto frac = currentIndex - (float) index0;
-
-        for (auto i = 0; i < outputBuffer.getNumChannels(); ++i)
+        if (tableDelta != 0.0f)
         {
-            auto* table = randomTable.getReadPointer(i);
-
-            auto value0 = table[index0];
-            auto value1 = table[index1];
-            auto currentSample = value0 + frac * (value1 - value0);
-            if ((currentIndex += tableDelta) > (float) tableSize)
-                currentIndex -= (float) tableSize;
-
-            outputBuffer.addSample (i, startSample, currentSample);
-
-        }
+            while (--numSamples >= 0)
+            {
+                auto tableSize = (unsigned int)  randomTable.getNumSamples();
+                
+                auto index0 = (unsigned int) currentIndex;
+                auto index1 = index0 + 1;
+                
+                auto frac = currentIndex - (float) index0;
+                
+                for (auto i = 0; i < outputBuffer.getNumChannels(); ++i)
+                {
+                    auto* table = randomTable.getReadPointer(i);
+                    
+                    auto value0 = table[index0];
+                    auto value1 = table[index1];
+                    auto currentSample = value0 + frac * (value1 - value0);
+                    if ((currentIndex += tableDelta) > (float) tableSize)
+                        currentIndex -= (float) tableSize;
+                    
+                    outputBuffer.addSample (i, startSample, currentSample);
+                    
+                }
+            }
+       }
         
     }
     
@@ -112,6 +120,20 @@ public:
         {
             return -1;
         };
+    }
+    
+    void randomiseTable ()
+    {
+        auto* samplesLeft = randomTable.getWritePointer(0);
+        auto* samplesRight = randomTable.getWritePointer(1);
+        
+        for (unsigned int i = 0; i < tableSize; ++i)
+        {
+            int sample = randomSampleGen();
+            samplesLeft[i] = sample;
+            samplesRight[i] = sample;
+        }
+
     }
 private:
     unsigned int tableSize = 1 << 7;

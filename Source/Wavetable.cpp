@@ -34,6 +34,8 @@ void Wavetable::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer&
 //    juce::AudioSourceChannelInfo info (buffer) ;
 //    keyboardState.processNextMidiBuffer(midiMessages, info.startSample, info.numSamples, true);
     
+    buffer.clear();
+    
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
