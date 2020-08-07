@@ -10,7 +10,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "ProcessorBase.h"
-
+#include "DelayLine.h"
 
 class SynthSound : public SynthesiserSound
 {
@@ -31,7 +31,7 @@ class SynthVoice : public SynthesiserVoice
 public:
     SynthVoice()
     {
-        makeTable();
+        damping = 0.99;
     }
     bool canPlaySound (SynthesiserSound* sound) override
     {
@@ -40,17 +40,22 @@ public:
     
     void startNote (int midiNoteNumber, float velocity, SynthesiserSound* sound, int currentPitchWheelPosition) override
     {
+        
         auto frequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
-        auto tableSizeOverSampleRate = tableSize / getSampleRate();
-        tableDelta = frequency * tableSizeOverSampleRate;
-        currentIndex = 0.0f;
+        auto sampleRate = getSampleRate();
+        
+        auto delayLineSize = (size_t) juce::roundToInt (sampleRate / frequency);
+        delayLine.resize(delayLineSize);
+        
+        randomiseDelayLine(delayLine);
+        noteOff = false;
+        
     }
     
     void stopNote (float velocity, bool allowTailOff) override
     {
         clearCurrentNote();
-        tableDelta = 0.0f;
-        randomiseTable();
+        noteOff = true;
 
     }
     
@@ -66,48 +71,21 @@ public:
     
     void renderNextBlock (AudioBuffer<float> &outputBuffer, int startSample, int numSamples) override
     {
-        if (tableDelta != 0.0f)
+        if (!noteOff)
         {
-            while (--numSamples >= 0)
+            for (int ch = 0; ch < outputBuffer.getNumChannels(); ++ch)
             {
-                auto tableSize = (unsigned int)  randomTable.getNumSamples();
-                
-                auto index0 = (unsigned int) currentIndex;
-                auto index1 = index0 + 1;
-                
-                auto frac = currentIndex - (float) index0;
-                
-                for (auto i = 0; i < outputBuffer.getNumChannels(); ++i)
+                for (int i = 0; i < outputBuffer.getNumSamples(); ++i)
                 {
-                    auto* table = randomTable.getReadPointer(i);
-                    
-                    auto value0 = table[index0];
-                    auto value1 = table[index1];
-                    auto currentSample = value0 + frac * (value1 - value0);
-                    if ((currentIndex += tableDelta) > (float) tableSize)
-                        currentIndex -= (float) tableSize;
-                    
-                    outputBuffer.addSample (i, startSample, currentSample);
-                    
+                    auto delayLineSample = delayLine.get(i % delayLine.size());
+                    outputBuffer.addSample(ch, i, delayLineSample);
                 }
             }
-       }
+        }
+
         
     }
     
-    void makeTable ()
-    {
-        randomTable.setSize(2, tableSize + 1);
-        auto* samplesLeft = randomTable.getWritePointer(0);
-        auto* samplesRight = randomTable.getWritePointer(1);
-        
-        for (unsigned int i = 0; i < tableSize; ++i)
-        {
-            int sample = randomSampleGen();
-            samplesLeft[i] = sample;
-            samplesRight[i] = sample;
-        }
-    }
     
     int randomSampleGen ()
     {
@@ -122,59 +100,21 @@ public:
         };
     }
     
-    void randomiseTable ()
+    void randomiseDelayLine (DelayLine<float>& delayLine)
     {
-        auto* samplesLeft = randomTable.getWritePointer(0);
-        auto* samplesRight = randomTable.getWritePointer(1);
         
-        for (unsigned int i = 0; i < tableSize; ++i)
+        for (int i = 0; i < delayLine.size(); ++i)
         {
-            int sample = randomSampleGen();
-            samplesLeft[i] = sample;
-            samplesRight[i] = sample;
+            auto sample = randomSampleGen();
+            delayLine.push(sample);
         }
-
     }
 private:
-    unsigned int tableSize = 1 << 7;
-    AudioSampleBuffer randomTable;
-    float currentIndex = 0.0f, tableDelta = 0.0f;
+    float damping;
+    DelayLine <float> delayLine;
+    bool noteOff {true};
+    
 };
-
-//============================================================
-//class SynthAudioSource : public juce::AudioSource
-//{
-//public:
-//    SynthAudioSource (juce::MidiKeyboardState& keyState)
-//    : keyboardState (keyState)
-//    {
-//        
-//    }
-//    void prepareToPlay (int samplesPerBlockExpected, double sampleRate) override
-//    {
-//    }
-//
-//    void releaseResources () override
-//    {
-//    }
-//
-//    void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override
-//    {
-//        bufferToFill.clearActiveBufferRegion();
-//
-//        juce::MidiBuffer incomingMidi;
-////        keyboardState.processNextMidiBuffer(incomingMidi, bufferToFill.startSample, bufferToFill.numSamples, true);
-//
-//        synth.renderNextBlock(*bufferToFill.buffer, incomingMidi, bufferToFill.startSample, bufferToFill.numSamples);
-//    }
-    
-    
-//private:
-//    juce::MidiKeyboardState& keyboardState;
-//    juce::Synthesiser synth;
-//};
-
-
 
 class Wavetable : public ProcessorBase
 {
