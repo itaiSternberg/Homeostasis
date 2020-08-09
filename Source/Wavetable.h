@@ -44,10 +44,11 @@ public:
         auto frequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
         auto sampleRate = getSampleRate();
         
-        auto delayLineSize = (size_t) juce::roundToInt (sampleRate / frequency);
-        delayLine.resize(delayLineSize);
-        
-        randomiseDelayLine(delayLine);
+        delayLineSize = (size_t) juce::roundToInt (sampleRate / frequency);
+        burst.resize(delayLineSize);
+//        delayLine.resize(delayLineSize);
+
+        randomiseDelayLine(burst);
         noteOff = false;
         
     }
@@ -77,8 +78,10 @@ public:
             {
                 for (int i = 0; i < outputBuffer.getNumSamples(); ++i)
                 {
-                    auto delayLineSample = delayLine.get(i % delayLine.size());
-                    outputBuffer.addSample(ch, i, delayLineSample);
+                    auto burstSample = burst.get(i % delayLineSize);
+                    
+                    
+                    outputBuffer.setSample(ch, i, burstSample);
                 }
             }
         }
@@ -105,13 +108,16 @@ public:
         
         for (int i = 0; i < delayLine.size(); ++i)
         {
-            auto sample = randomSampleGen();
+            float sample = juce::Random::getSystemRandom().nextFloat();
+            sample = (sample * 2) - 1;
             delayLine.push(sample);
         }
     }
 private:
     float damping;
-    DelayLine <float> delayLine;
+    size_t delayLineSize;
+    DelayLine <float> burst;
+//    DelayLine <float> delayLine;
     bool noteOff {true};
     
 };
@@ -128,8 +134,8 @@ public:
     void processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages) override;
     void reset() override;
     
+   
 private:
-    juce::MidiKeyboardState keyboardState;
     juce::Synthesiser synth;
 };
 

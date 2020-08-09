@@ -10,7 +10,6 @@
 
 #include "Wavetable.h"
 Wavetable::Wavetable ()
-//: keyboardState (keyState)
 {
     synth.addVoice(new SynthVoice());
     synth.addSound(new SynthSound());
@@ -33,15 +32,23 @@ void Wavetable::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer&
 //        DBG(midiMessages.getNumEvents());
 //    juce::AudioSourceChannelInfo info (buffer) ;
 //    keyboardState.processNextMidiBuffer(midiMessages, info.startSample, info.numSamples, true);
+     for (const MidiMessageMetadata metadata : midiMessages)
+     {
+        if (metadata.numBytes == 3 && metadata.getMessage().isNoteOn())
+        {
+            unsigned int midiNoteNum = metadata.getMessage().getNoteNumber();
+            Logger::writeToLog( metadata.getMessage().getDescription());
+        }
+     }
+    synth.renderNextBlock(buffer, midiMessages, 0, getTotalNumOutputChannels());
     
-    buffer.clear();
     
-    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
-
 void Wavetable::reset()
 {
 
 }
+
+
 
 

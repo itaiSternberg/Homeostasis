@@ -7,10 +7,8 @@
     <GROUP id="{4C325697-144E-A12A-0B03-8AB6CD45DF0D}" name="Source">
       <GROUP id="{EB4C6215-54D1-520D-19B8-4A3C2F7C5A86}" name="DSP">
         <GROUP id="{88FD7502-4BA1-9310-C954-21B31F02B288}" name="Processors">
-          <FILE id="qSqt1Q" name="FeedbackProcessor.cpp" compile="1" resource="0"
-                file="Source/FeedbackProcessor.cpp"/>
-          <FILE id="e4wKtG" name="FeedbackProcessor.h" compile="0" resource="0"
-                file="Source/FeedbackProcessor.h"/>
+          <FILE id="O2S4gW" name="Wavetable.cpp" compile="1" resource="0" file="Source/Wavetable.cpp"/>
+          <FILE id="JyJdkZ" name="Wavetable.h" compile="0" resource="0" file="Source/Wavetable.h"/>
           <FILE id="u2q6Pv" name="PhaserProcessor.cpp" compile="1" resource="0"
                 file="Source/PhaserProcessor.cpp"/>
           <FILE id="qoNaaw" name="PhaserProcessor.h" compile="0" resource="0"
@@ -24,10 +22,10 @@
                 file="Source/SVFProcessor.cpp"/>
           <FILE id="C4UBNw" name="SVFProcessor.h" compile="0" resource="0" file="Source/SVFProcessor.h"/>
         </GROUP>
-        <FILE id="rlFTQJ" name="DelayLine.h" compile="0" resource="0" file="Source/DelayLine.h"/>
-        <FILE id="O2S4gW" name="Wavetable.cpp" compile="1" resource="0" file="Source/Wavetable.cpp"/>
-        <FILE id="JyJdkZ" name="Wavetable.h" compile="0" resource="0" file="Source/Wavetable.h"/>
-        <FILE id="GVvoY9" name="FeedbackGraph.h" compile="0" resource="0" file="Source/FeedbackGraph.h"/>
+        <GROUP id="{837DC387-DCFC-AF6C-9ED2-FF503C40F2F3}" name="Utils">
+          <FILE id="rlFTQJ" name="DelayLine.h" compile="0" resource="0" file="Source/DelayLine.h"/>
+          <FILE id="GVvoY9" name="FeedbackGraph.h" compile="0" resource="0" file="Source/FeedbackGraph.h"/>
+        </GROUP>
       </GROUP>
       <FILE id="L01nD4" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

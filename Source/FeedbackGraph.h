@@ -14,7 +14,6 @@
 #include "DistortionProcessor.h"
 #include "Wavetable.h"
 #include "PhaserProcessor.h"
-#include "FeedbackProcessor.h"
 
 class feedbackGraph
 {
@@ -74,7 +73,15 @@ public:
     {
         for (auto node : nodes)
                {
+                   if (node->nodeID != inputNode->nodeID)
+                   {
                    setNodesConfig(node);
+                   } else
+                   {
+                       node->getProcessor()->setPlayConfigDetails(4, numChannels, sampleRate, maxBlockSize);
+
+                   }
+                   
                }
     }
 
@@ -125,9 +132,9 @@ public:
         graph.addConnection({{node4->nodeID, left},{outputNode->nodeID, left}});
         graph.addConnection({{node4->nodeID, right},{outputNode->nodeID, right}});
         
-//        graph.addConnection({{node4->nodeID, left},{feedbackNode->nodeID, left}});
-//        graph.addConnection({{node4->nodeID, right},{feedbackNode->nodeID, right}});
-//
+        graph.addConnection({{node4->nodeID, left},{inputNode->nodeID, leftFB}});
+        graph.addConnection({{node4->nodeID, right},{inputNode->nodeID, rightFB}});
+
 //        graph.addConnection({{feedbackNode->nodeID, leftFB},{inputNode->nodeID, left}});
 //        graph.addConnection({{feedbackNode->nodeID, rightFB},{inputNode->nodeID, right}});
 
