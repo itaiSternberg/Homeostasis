@@ -11,6 +11,9 @@
 #include "Wavetable.h"
 Wavetable::Wavetable ()
 {
+    DBG(getBusesLayout().getChannelSet(true, 0).getDescription());
+    delayLineSize = 10;
+    delayLine.resize(delayLineSize);
     synth.addVoice(new SynthVoice());
     synth.addSound(new SynthSound());
 }
@@ -23,32 +26,27 @@ Wavetable::~Wavetable()
 
 void Wavetable::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-            synth.setCurrentPlaybackSampleRate(sampleRate);
+    synth.setCurrentPlaybackSampleRate(sampleRate);
+    lastSampleRate = sampleRate;
 }
+
 
 void Wavetable::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
 {
-//    if (midiMessages.getNumEvents() > 0)
-//        DBG(midiMessages.getNumEvents());
-//    juce::AudioSourceChannelInfo info (buffer) ;
-//    keyboardState.processNextMidiBuffer(midiMessages, info.startSample, info.numSamples, true);
-     for (const MidiMessageMetadata metadata : midiMessages)
-     {
-        if (metadata.numBytes == 3 && metadata.getMessage().isNoteOn())
-        {
-            unsigned int midiNoteNum = metadata.getMessage().getNoteNumber();
-            Logger::writeToLog( metadata.getMessage().getDescription());
-        }
-     }
+    
     synth.renderNextBlock(buffer, midiMessages, 0, getTotalNumOutputChannels());
-    
-    
 }
 void Wavetable::reset()
 {
-
+    
 }
 
 
+void Wavetable::resizeDelayLineToFreq (DelayLine<float> &delayLine, int lastSampleRate, const juce::MidiMessageMetadata &metadata)
+{
+    unsigned int frequency = juce::MidiMessage::getMidiNoteInHertz(metadata.getMessage().getNoteNumber());
+    delayLineSize = (size_t) juce::roundToInt (lastSampleRate / frequency);
+    delayLine.resize(delayLineSize);
+}
 
 

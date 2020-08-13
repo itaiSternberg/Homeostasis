@@ -69,8 +69,8 @@ void SVFProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
-
-
+    spec.numChannels = 2;
+    
     mStateVariableFilter.reset();
     mStateVariableFilter.prepare(spec);
 }
@@ -80,6 +80,7 @@ void SVFProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMes
    
 
     dsp::AudioBlock<float> block (buffer);
+
     updateFilter();
     mStateVariableFilter.process(dsp::ProcessContextReplacing<float> (block));
 }

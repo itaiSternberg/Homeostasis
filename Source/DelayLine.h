@@ -59,114 +59,131 @@ private:
     size_t leastRecentIndex {0};
 };
 
-template <typename Type, size_t maxNumChannels = 2>
-class Delay
+
+template <typename Type>
+class CircularBuffer
 {
 public:
-    Delay()
+    void makeBuffer (unsigned int bufferLength)
     {
-        constexpr int left = 0;
-        constexpr int right = 0;
+        mBufferLength = (unsigned int) (pow (2, ceil (log (bufferLength) / log(2))));
+        wrapMask = mBufferLength - 1;
+        buffer.resize (bufferLength);
+        clearBuffer ();
+    }
+    void clearBuffer ()
+    {
+        std::fill (buffer.begin(), buffer.end() , Type (0));
+    }
+    
+    void writeBuffer (Type newValue)
+    {
+        buffer[writeIndex++] = newValue;  // writes the newsample to the position of the writeindex then increments it
         
-        setMaxDelayTime(100);
-        setDelayTime(25,left);
-        setDelayTime(25,right);
+        writeIndex &= wrapMask;          // wraps around the size of the buffer
     }
-    void prepare(const juce::dsp::ProcessSpec& spec)
+    
+    Type readBuffer (int delayInSamples)
     {
-        jassert (spec.numChannels <= maxNumChannels);
-        sampleRate = spec.sampleRate;
-        updateDelayLineSize();
-        updateDelayTime();
+        
+        int readIndex = writeIndex - delayInSamples;
+        readIndex &= wrapMask;            // wraps the readIndex
+        return buffer [readIndex];         // returns the sample at the buffer
     }
-
-    void reset() noexcept
+    
+    Type readBuffer (double delayInFractionalSamples, bool interpolate)
     {
-        for (auto& delayLine : delayLines)
-        {
-            delayLine.clear();
-        }
+        Type y1 =  readBuffer ((int) delayInFractionalSamples);
+        if (!interpolate) return y1;
+        
+        Type y2 = (int) readBuffer ((int) delayInFractionalSamples + 1);
+        
+        double frac = delayInFractionalSamples - (int) delayInFractionalSamples;
+        
+        return linearInterpolation (y1, y2, frac);
     }
-
-    size_t getNumChannels () const noexcept
-    {
-        return delayLines.size();
-    }
-
-
-
-    void setMaxDelayTime(Type newValue)
-    {
-        jassert(newValue > Type (0));
-        maxDelayTime = newValue;
-        updateDelayLineSize();
-
-    }
-
-    void setDelayTime (Type newValue, size_t channel)
-    {
-        if (channel >= getNumChannels())
-        {
-            jassertfalse;
-            return;
-        }
-
-        jassert (newValue > Type (0));
-        delayTimes[channel] = newValue;
-    }
-
-    template<typename ProcessContext>
-    void process(const ProcessContext& context)
-    {
-        auto& inputBlock = context.getInputBlock();
-        auto& outputBlock = context.getOutputBlock();
-        auto numSamples = outputBlock.getNumSamples();
-        auto numChannels = outputBlock.getNumChannels();
-
-        jassert(inputBlock.getNumSamples() == numSamples);
-        jassert(inputBlock.getNumChannels() == numChannels);
-        for (size_t channel = 0; channel < numChannels; ++channel)
-        {
-            auto* input = inputBlock.getChannelPointer(channel);
-            auto* output = outputBlock.getChannelPointer(channel);
-            auto& delayLine = delayLines[channel];
-            auto delayTime = delayTimes[channel];
-
-            for (size_t sample = 0 ; sample < numSamples; ++sample)
-            {
-                auto delayedSample = delayLine.get(delayTime);
-                auto inputSample = input[sample];
-                auto delayLineInputSample = std::tanh (inputSample + delayedSample);
-                delayLine.push (delayLineInputSample);
-                auto outputSample = delayedSample;
-                output[sample] = outputSample;
-            }
-        }
-
-    }
-
+    
+    
 private:
-    std::array<DelayLine<Type>, maxNumChannels> delayLines;
-    std::array <Type, maxNumChannels> delayTimes;
-    std::array <size_t, maxNumChannels> delayTimesInSamples;
-    Type sampleRate {Type (44100)};
-    Type maxDelayTime {Type (0)};
-
-    void updateDelayLineSize ()
+   static double linearInterpolation (double y1, double y2, double fractional_X)
     {
-        auto delayLineSizeSamples = std::ceil (maxDelayTime * sampleRate);
-        for (auto& delayLine : delayLines)
+        if (fractional_X >= 1.0) return y2;
+        
+        return fractional_X * y2 + (1.0 - fractional_X) * y1;
+        
+    }
+    std::vector<Type> buffer;
+    unsigned int writeIndex;
+    unsigned int mBufferLength;
+    unsigned int wrapMask;
+};
+
+
+class FeedbackMechanisim
+{
+    
+public:
+    void createDelayBuffers (double sampleRate, double bufferLength_mSec)
+    {
+        mSampleRate = sampleRate;
+        mBufferLength_mSec = bufferLength_mSec;
+        
+        mSamplesPerMSec = sampleRate / 1000.0;
+        
+        mBufferLength = (unsigned int) (mBufferLength_mSec * mSamplesPerMSec) + 1;
+        for (auto buffer : buffers)
         {
-            delayLine.resize(delayLineSizeSamples);
+            buffer.makeBuffer (mBufferLength);
         }
     }
-
-    void updateDelayTime() noexcept
+    
+    
+    bool reset (double sampleRate)
     {
-        for (size_t channel = 0; channel < maxNumChannels; ++channel)
+        if (mSampleRate == sampleRate)
         {
-            delayTimesInSamples[channel] = (size_t) juce::roundToInt(delayTimes[channel] * sampleRate);
+            for (auto buffer : buffers)
+                   {
+                       buffer.clearBuffer();
+                   }
+            return true;
         }
+        
+        createDelayBuffers (sampleRate, mBufferLength_mSec);
+        return true;
     }
-
+    
+    void processSample (double& xn, CircularBuffer<double>& delayBuffer, double delayInSamples )
+    {
+        double yn = delayBuffer.readBuffer (delayInSamples, true);
+        double dn = xn + yn * mFeedback;
+        delayBuffer.writeBuffer(dn);
+        xn = xn * 0.5 + yn * 0.5;
+    }
+    
+    void processBuffer (AudioBuffer<double>& inputBuffer)
+    {
+        for (unsigned int ch = 0; ch < inputBuffer.getNumSamples(); ++ ch)
+        {
+            auto delayBuffer = buffers[ch];
+            auto* xn = inputBuffer.getWritePointer(ch);
+                  for (unsigned int i = 0; i < inputBuffer.getNumSamples(); ++i)
+                  {
+                      processSample (xn[i], delayBuffer, mDelayInSamplesL);
+                  }
+        }
+      
+    }
+private:
+    std::array<CircularBuffer<double>, 2> buffers;
+    double mFeedback {80};
+    double mBufferLength_mSec;
+    double mWetMix;
+    double mDryMix;
+    double mDelayInSamplesL;
+    double mDelayInSamplesR;
+    unsigned int mBufferLength;
+    double mSampleRate;
+    double mSamplesPerMSec;
+    
 };

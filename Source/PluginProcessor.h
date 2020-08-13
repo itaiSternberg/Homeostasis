@@ -72,7 +72,7 @@ private:
 
     void parameterChanged(const String &parameterID, float newValue) override;
    
-    feedbackGraph graph;
+    ProcessorChain chain;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessor)
 };
 

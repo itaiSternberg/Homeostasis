@@ -102,15 +102,15 @@ void HomeostasisAudioProcessor::changeProgramName (int index, const String& newN
 //==============================================================================
 void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    graph.prepareToPlay(sampleRate, samplesPerBlock);
-    
+    chain.prepareToPlay(sampleRate, samplesPerBlock);
 }
 
 void HomeostasisAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
-    graph.releaseResources();
+    
+    chain.releaseResources();
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -151,8 +151,9 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-   
-    graph.processBlock(buffer, midiMessages);
+
+    
+    chain.processBlock(buffer, midiMessages);
 
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -260,7 +261,6 @@ void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, flo
     String choice = processorChoises.getReference(newValue);
     int paramIndex = mainTree.getParameter(parameterID)->getParameterIndex();
     
-    graph.processorChanged(choice, paramIndex, mainTree);
-
+    chain.processorChanged(choice, paramIndex, mainTree);
 
 }

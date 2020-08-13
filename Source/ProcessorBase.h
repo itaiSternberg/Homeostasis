@@ -19,7 +19,7 @@ public:
     ~ProcessorBase() {}
  
     //==============================================================================
-    void prepareToPlay (double, int) override {}
+    void prepareToPlay (double sampleRate, int samplesPerBlock) override {}
     void releaseResources() override {}
     void processBlock (AudioSampleBuffer& buffer, MidiBuffer&) override {}
  

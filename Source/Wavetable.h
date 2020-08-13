@@ -43,14 +43,11 @@ public:
         
         auto frequency = juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber);
         auto sampleRate = getSampleRate();
-        
         delayLineSize = (size_t) juce::roundToInt (sampleRate / frequency);
         burst.resize(delayLineSize);
-//        delayLine.resize(delayLineSize);
-
         randomiseDelayLine(burst);
-        noteOff = false;
         
+        noteOff = false;
     }
     
     void stopNote (float velocity, bool allowTailOff) override
@@ -133,10 +130,14 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages) override;
     void reset() override;
-    
+    void resizeDelayLineToFreq (DelayLine<float> &delayLine, int lastSampleRate, const juce::MidiMessageMetadata &metadata);
+
    
 private:
     juce::Synthesiser synth;
+    DelayLine<float> delayLine;
+    size_t delayLineSize;
+    int lastSampleRate;
 };
 
 
