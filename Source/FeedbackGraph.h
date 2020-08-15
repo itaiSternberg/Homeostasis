@@ -14,6 +14,7 @@
 #include "DistortionProcessor.h"
 #include "Wavetable.h"
 #include "PhaserProcessor.h"
+#include "DelayLine.h"
 
 class ProcessorChain
 {
@@ -29,6 +30,7 @@ public:
         {
             processor.get()->prepareToPlay(mSampleRate,maxBlockSize);
         }
+        feedback.createDelayBuffers(sampleRate, 500);
         initialiseChain();
     }
     
@@ -39,6 +41,7 @@ public:
         {
             processor.get()->processBlock(buffer, midiMessages);
         }
+        feedback.processBuffer(buffer);
     }
     void releaseResources()
     {
@@ -119,4 +122,6 @@ private:
     uint32 maxBlockSize;
     uint32 numChannels {2};
     int mSampleRate;
+    
+    FeedbackMechanism<float> feedback;
 };

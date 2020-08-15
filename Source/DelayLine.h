@@ -60,7 +60,7 @@ private:
 };
 
 
-template <typename Type>
+template <typename Type, size_t numChannels = 2>
 class CircularBuffer
 {
 public:
@@ -68,35 +68,42 @@ public:
     {
         mBufferLength = (unsigned int) (pow (2, ceil (log (bufferLength) / log(2))));
         wrapMask = mBufferLength - 1;
-        buffer.resize (bufferLength);
+        buffer.setSize (numChannels, mBufferLength);
+        DBG(numChannels);
         clearBuffer ();
     }
     void clearBuffer ()
     {
-        std::fill (buffer.begin(), buffer.end() , Type (0));
+        buffer.clear();
     }
     
-    void writeBuffer (Type newValue)
+    void writeBuffer (Type newValue, unsigned int channel)
     {
-        buffer[writeIndex++] = newValue;  // writes the newsample to the position of the writeindex then increments it
+        jassert (channel >= 0 && channel <= buffer.getNumChannels());
         
-        writeIndex &= wrapMask;          // wraps around the size of the buffer
+        auto* writePointer = buffer.getWritePointer( channel);
+        writePointer[writeIndex++] = newValue;  // writes the newsample to the position of the writeindex then increments it
+        writeIndex &= wrapMask;
+        
+        // wraps around the size of the buffer
     }
     
-    Type readBuffer (int delayInSamples)
+    Type readBuffer (int delayInSamples, unsigned int channel)
     {
-        
+        jassert (channel >= 0 && channel <= buffer.getNumChannels());
+
+        const auto* readPointer = buffer.getReadPointer (channel);
         int readIndex = writeIndex - delayInSamples;
         readIndex &= wrapMask;            // wraps the readIndex
-        return buffer [readIndex];         // returns the sample at the buffer
+        return readPointer [readIndex];         // returns the sample at the buffer
     }
     
-    Type readBuffer (double delayInFractionalSamples, bool interpolate)
+    Type readBuffer (double delayInFractionalSamples, bool interpolate, unsigned int channel)
     {
-        Type y1 =  readBuffer ((int) delayInFractionalSamples);
+        Type y1 =  readBuffer ((int) delayInFractionalSamples, channel);
         if (!interpolate) return y1;
         
-        Type y2 = (int) readBuffer ((int) delayInFractionalSamples + 1);
+        Type y2 = (int) readBuffer ((int) (delayInFractionalSamples + 1) , channel);
         
         double frac = delayInFractionalSamples - (int) delayInFractionalSamples;
         
@@ -112,78 +119,75 @@ private:
         return fractional_X * y2 + (1.0 - fractional_X) * y1;
         
     }
-    std::vector<Type> buffer;
+    
+    AudioBuffer<Type> buffer;
     unsigned int writeIndex;
     unsigned int mBufferLength;
     unsigned int wrapMask;
 };
 
 
-class FeedbackMechanisim
+template <typename Type>
+class FeedbackMechanism
 {
-    
+
 public:
-    void createDelayBuffers (double sampleRate, double bufferLength_mSec)
+    void createDelayBuffers (double sampleRate, Type bufferLength_mSec)
     {
         mSampleRate = sampleRate;
         mBufferLength_mSec = bufferLength_mSec;
-        
+
         mSamplesPerMSec = sampleRate / 1000.0;
-        
+
         mBufferLength = (unsigned int) (mBufferLength_mSec * mSamplesPerMSec) + 1;
-        for (auto buffer : buffers)
-        {
-            buffer.makeBuffer (mBufferLength);
-        }
+
+        buffer.makeBuffer (mBufferLength);
+        
     }
-    
-    
+
+
     bool reset (double sampleRate)
     {
         if (mSampleRate == sampleRate)
         {
-            for (auto buffer : buffers)
-                   {
-                       buffer.clearBuffer();
-                   }
+            buffer.clearBuffer();
             return true;
         }
-        
+
         createDelayBuffers (sampleRate, mBufferLength_mSec);
         return true;
     }
-    
-    void processSample (double& xn, CircularBuffer<double>& delayBuffer, double delayInSamples )
+
+    void processSample (Type& xn, CircularBuffer<Type>& delayBuffer, Type delayInSamples, unsigned int channel )
     {
-        double yn = delayBuffer.readBuffer (delayInSamples, true);
-        double dn = xn + yn * mFeedback;
-        delayBuffer.writeBuffer(dn);
+        Type yn = delayBuffer.readBuffer (delayInSamples, true, channel);
+        Type dn = xn + yn * mFeedback;
+        delayBuffer.writeBuffer(dn, channel);
         xn = xn * 0.5 + yn * 0.5;
     }
-    
-    void processBuffer (AudioBuffer<double>& inputBuffer)
+
+    void processBuffer (AudioBuffer<Type>& inputBuffer)
     {
-        for (unsigned int ch = 0; ch < inputBuffer.getNumSamples(); ++ ch)
+        for (unsigned int ch = 0; ch < inputBuffer.getNumChannels(); ++ ch)
         {
-            auto delayBuffer = buffers[ch];
             auto* xn = inputBuffer.getWritePointer(ch);
-                  for (unsigned int i = 0; i < inputBuffer.getNumSamples(); ++i)
+                  for (size_t i = 0; i < inputBuffer.getNumSamples(); ++i)
                   {
-                      processSample (xn[i], delayBuffer, mDelayInSamplesL);
+                      processSample (xn[i], buffer, mDelayInSamplesL, ch);
                   }
         }
-      
+
     }
 private:
-    std::array<CircularBuffer<double>, 2> buffers;
-    double mFeedback {80};
-    double mBufferLength_mSec;
-    double mWetMix;
-    double mDryMix;
-    double mDelayInSamplesL;
-    double mDelayInSamplesR;
+    CircularBuffer<Type> buffer;
+    Type mFeedback {0.8};
+    Type mBufferLength_mSec;
+    Type mWetMix;
+    Type mDryMix;
+    Type mDelayInSamplesL;
+    Type mDelayInSamplesR;
     unsigned int mBufferLength;
-    double mSampleRate;
-    double mSamplesPerMSec;
-    
+    Type mSampleRate;
+    Type mSamplesPerMSec;
+
 };
