@@ -25,27 +25,22 @@ public:
         mSampleRate = sampleRate;
         maxBlockSize = samplesPerBlock;
         
-        processor0.prepareToPlay(mSampleRate, maxBlockSize);
         for (auto& processor : dynamicProcessors)
         {
             processor.get()->prepareToPlay(mSampleRate,maxBlockSize);
         }
-        feedback.createDelayBuffers(sampleRate, 500);
         initialiseChain();
     }
     
     void processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
     {
-        processor0.processBlock(buffer, midiMessages);
         for (auto& processor : dynamicProcessors)
         {
             processor.get()->processBlock(buffer, midiMessages);
         }
-        feedback.processBuffer(buffer);
     }
     void releaseResources()
     {
-        processor0.releaseResources();
         for (auto& processor : dynamicProcessors)
         {
             processor.get()->releaseResources();
@@ -59,7 +54,6 @@ public:
             dynamicProcessors.emplace_back (std::make_unique<ProcessorBase> ());
         }
         
-        processor0.setPlayConfigDetails(numChannels, numChannels, mSampleRate, maxBlockSize);
         for (auto& processor : dynamicProcessors)
         {
             setProcessorConfig(processor);
@@ -84,7 +78,6 @@ public:
        {
            jassert (index >= 0 && index <= 3);
            dynamicProcessors[index].reset (new T (tree, index));
-           dynamicProcessors[index].get()->prepareToPlay(mSampleRate, maxBlockSize);
        }
     
     
@@ -112,16 +105,15 @@ public:
         for (auto& processor : dynamicProcessors)
         {
             setProcessorConfig(processor);
+            processor.get()->prepareToPlay(mSampleRate, maxBlockSize);
             processor.get()->enableAllBuses();
         }
     }
 private:
-    Wavetable processor0;
     std::vector<std::unique_ptr<ProcessorBase>> dynamicProcessors;
   
     uint32 maxBlockSize;
     uint32 numChannels {2};
     int mSampleRate;
     
-    FeedbackMechanism<float> feedback;
 };

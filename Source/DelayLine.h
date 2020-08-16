@@ -66,6 +66,7 @@ class CircularBuffer
 public:
     void makeBuffer (unsigned int bufferLength)
     {
+        writeIndex = 0;
         mBufferLength = (unsigned int) (pow (2, ceil (log (bufferLength) / log(2))));
         wrapMask = mBufferLength - 1;
         buffer.setSize (numChannels, mBufferLength);
@@ -110,6 +111,7 @@ public:
         return linearInterpolation (y1, y2, frac);
     }
     
+    AudioBuffer<Type> buffer;
     
 private:
    static double linearInterpolation (double y1, double y2, double fractional_X)
@@ -120,7 +122,6 @@ private:
         
     }
     
-    AudioBuffer<Type> buffer;
     unsigned int writeIndex;
     unsigned int mBufferLength;
     unsigned int wrapMask;
@@ -140,8 +141,9 @@ public:
         mSamplesPerMSec = sampleRate / 1000.0;
 
         mBufferLength = (unsigned int) (mBufferLength_mSec * mSamplesPerMSec) + 1;
-
-        buffer.makeBuffer (mBufferLength);
+        mDelayInSamples = (unsigned int) (mDelayTime * mSamplesPerMSec);
+        
+        circularBuffer.makeBuffer (mBufferLength);
         
     }
 
@@ -150,7 +152,7 @@ public:
     {
         if (mSampleRate == sampleRate)
         {
-            buffer.clearBuffer();
+            circularBuffer.clearBuffer();
             return true;
         }
 
@@ -163,7 +165,7 @@ public:
         Type yn = delayBuffer.readBuffer (delayInSamples, true, channel);
         Type dn = xn + yn * mFeedback;
         delayBuffer.writeBuffer(dn, channel);
-        xn = xn * 0.5 + yn * 0.5;
+        xn = yn;
     }
 
     void processBuffer (AudioBuffer<Type>& inputBuffer)
@@ -173,19 +175,21 @@ public:
             auto* xn = inputBuffer.getWritePointer(ch);
                   for (size_t i = 0; i < inputBuffer.getNumSamples(); ++i)
                   {
-                      processSample (xn[i], buffer, mDelayInSamplesL, ch);
+                      processSample (xn[i], circularBuffer, mDelayInSamples, ch);
                   }
         }
 
     }
+    
+    CircularBuffer<Type> circularBuffer;
+
 private:
-    CircularBuffer<Type> buffer;
-    Type mFeedback {0.8};
+    Type mFeedback {0.5};
     Type mBufferLength_mSec;
+    Type mDelayTime;
     Type mWetMix;
     Type mDryMix;
-    Type mDelayInSamplesL;
-    Type mDelayInSamplesR;
+    Type mDelayInSamples ;
     unsigned int mBufferLength;
     Type mSampleRate;
     Type mSamplesPerMSec;

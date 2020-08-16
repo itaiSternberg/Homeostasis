@@ -13,7 +13,9 @@ SVFProcessor::SVFProcessor(AudioProcessorValueTreeState& apvts , int slotIndex)
 : apvts(apvts)
 , slotIndex(String(slotIndex + 1))
 
-{}
+{
+    mStateVariableFilter.reset();
+}
 SVFProcessor::~SVFProcessor()
 {
     
@@ -69,17 +71,13 @@ void SVFProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = 2;
-    
     mStateVariableFilter.reset();
     mStateVariableFilter.prepare(spec);
 }
 
 void SVFProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
-   
-
-    dsp::AudioBlock<float> block (buffer);
+   dsp::AudioBlock<float> block (buffer);
 
     updateFilter();
     mStateVariableFilter.process(dsp::ProcessContextReplacing<float> (block));

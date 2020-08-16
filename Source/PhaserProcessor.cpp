@@ -20,7 +20,6 @@ void PhaserProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = 2;
     phaser.reset();
     phaser.prepare(spec);
 }

@@ -38,7 +38,7 @@ void DistortionProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
-
+    
     processorChain.reset();
     processorChain.prepare(spec);
 }

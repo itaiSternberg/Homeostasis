@@ -31,7 +31,6 @@ class SynthVoice : public SynthesiserVoice
 public:
     SynthVoice()
     {
-        damping = 0.99;
     }
     bool canPlaySound (SynthesiserSound* sound) override
     {

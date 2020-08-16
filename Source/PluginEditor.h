@@ -44,6 +44,7 @@ private:
     std::unique_ptr<ComboBoxAttachment> feedbackSlot4Attachment;
     
     Slider delaySlider;
-    
+    TextButton panicButton;
+    std::unique_ptr<ButtonParameterAttachment> panicButtonAttachment;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessorEditor)
 };

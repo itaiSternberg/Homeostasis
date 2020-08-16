@@ -24,6 +24,8 @@ HomeostasisAudioProcessor::HomeostasisAudioProcessor()
                        ),
         processorChoises({"Empty","Filter","Phaser","Distortion"})
         , mainTree(*this, nullptr, "SlotsParameters", MainTreeLayout())
+        , oneSampleBuffer(2, 1)
+
 #endif
 {
     mainTree.state.addListener(this);
@@ -102,14 +104,20 @@ void HomeostasisAudioProcessor::changeProgramName (int index, const String& newN
 //==============================================================================
 void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    
+    processor0.prepareToPlay(sampleRate, samplesPerBlock);
+    feedback.createDelayBuffers(sampleRate, 250);
+    oneSampleBuffer.clear();
     chain.prepareToPlay(sampleRate, samplesPerBlock);
+    processor0.setPlayConfigDetails(2, 2, sampleRate, samplesPerBlock);
+
 }
 
 void HomeostasisAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
-    
+    processor0.releaseResources();
     chain.releaseResources();
 }
 
@@ -142,31 +150,30 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
     
-    chain.processBlock(buffer, midiMessages);
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-   
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    clearDelayBufferIfNewNote(midiMessages);
+    
+    processor0.processBlock(buffer, midiMessages);
+    
+    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
+        auto* writePointer = buffer.getWritePointer (channel);
+        const auto* readPointer = buffer.getReadPointer(channel);
+        auto* oneSampleBufferWritePtr = oneSampleBuffer.getWritePointer(channel);
+        const auto* oneSampleBufferReadPtr = oneSampleBuffer.getReadPointer(channel);
 
-        // ..do something to the data...
+        for (int i = 0; i < buffer.getNumSamples(); ++i)
+        {
+            writePointer[i] = /*dry*/ 0.5 * readPointer[i] + /*wet*/ 0.5 * oneSampleBufferReadPtr[0];
+            oneSampleBufferWritePtr[0] = 0; //clear the buffer
+            oneSampleBufferWritePtr[0] = readPointer[i] * 0.5 /*feedback*/;
+            chain.processBlock(oneSampleBuffer, midiMessages);
+
+            feedback.processBuffer(oneSampleBuffer);
+            
+        }
+        
+
     }
     
  
@@ -245,12 +252,36 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
     parameterGroups.push_back(PhaserProcessor::makeParamGroup("3"));
     parameterGroups.push_back(PhaserProcessor::makeParamGroup("4"));
     
+    parameterGroups.push_back(std::make_unique<AudioProcessorParameterGroup>("globalParameters",
+                                                                             "Global Parameters",
+                                                                             "seperator",
+                                                                             std::make_unique<AudioParameterBool> ("panic","Panic", false, "panic!")
+                                                                             ));
+
+    
 
     return {parameterGroups.begin(), parameterGroups.end()};
 }
 
 //==============================================================================
 
+void HomeostasisAudioProcessor::clearDelayBufferIfNewNote(MidiBuffer& midiMessages)
+{
+    for (const MidiMessageMetadata metadata : midiMessages)
+           if (metadata.numBytes == 3)
+           {
+               if (metadata.getMessage().isNoteOn())
+               {
+                   newNote = true;
+               }
+           }
+       
+       if (newNote)
+       {
+           feedback.circularBuffer.clearBuffer();
+           newNote = false;
+       }
+}
 
 void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
@@ -262,5 +293,5 @@ void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, flo
     int paramIndex = mainTree.getParameter(parameterID)->getParameterIndex();
     
     chain.processorChanged(choice, paramIndex, mainTree);
-
+//    feedback.circularBuffer.clearBuffer();
 }
