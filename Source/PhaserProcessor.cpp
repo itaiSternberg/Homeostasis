@@ -31,6 +31,10 @@ void PhaserProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midi
     phaser.process(dsp::ProcessContextReplacing <float> (block));
 }
 
+void PhaserProcessor::releaseResources()
+{
+    phaser.reset();
+}
 std::unique_ptr<AudioProcessorParameterGroup> PhaserProcessor::makeParamGroup (String slotIndex)
 {
     return std::make_unique<AudioProcessorParameterGroup> (

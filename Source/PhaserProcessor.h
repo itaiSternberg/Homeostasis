@@ -17,6 +17,8 @@ public:
     const String getName() const override {return "Phaser";};
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
+    void releaseResources() override;
+
     static std::unique_ptr<AudioProcessorParameterGroup> makeParamGroup (String slotIndex);
     void updatePhaser();
 private:

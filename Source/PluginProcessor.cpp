@@ -106,7 +106,7 @@ void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 {
     
     processor0.prepareToPlay(sampleRate, samplesPerBlock);
-    feedback.createDelayBuffers(sampleRate, 250);
+    feedback.createDelayBuffers(sampleRate, 1000);
     oneSampleBuffer.clear();
     chain.prepareToPlay(sampleRate, samplesPerBlock);
     processor0.setPlayConfigDetails(2, 2, sampleRate, samplesPerBlock);
@@ -151,7 +151,7 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
     
-    clearDelayBufferIfNewNote(midiMessages);
+    midiHandeling(midiMessages);
     
     processor0.processBlock(buffer, midiMessages);
     
@@ -164,8 +164,8 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
 
         for (int i = 0; i < buffer.getNumSamples(); ++i)
         {
-            writePointer[i] = /*dry*/ 0.5 * readPointer[i] + /*wet*/ 0.5 * oneSampleBufferReadPtr[0];
-            oneSampleBufferWritePtr[0] = readPointer[i] * 0.5 /*feedback*/;
+            writePointer[i] = std::tanh(/*dry*/ 0.1 * readPointer[i] + /*wet*/ 0.9 * oneSampleBufferReadPtr[0]);
+            oneSampleBufferWritePtr[0] = readPointer[i] * 1.01 /*feedback*/;
             chain.processBlock(oneSampleBuffer, midiMessages);
 
             feedback.processOneChannelBuffer (oneSampleBuffer, channel);
@@ -264,9 +264,16 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
 
 //==============================================================================
 
-void HomeostasisAudioProcessor::clearDelayBufferIfNewNote(MidiBuffer& midiMessages)
+void HomeostasisAudioProcessor::midiHandeling(MidiBuffer& midiMessages)
 {
     for (const MidiMessageMetadata metadata : midiMessages)
+    {
+        clearDelayBufferIfNewNote(metadata);
+        setDelayTImeToFreq(metadata);
+    }
+}
+void HomeostasisAudioProcessor::clearDelayBufferIfNewNote(MidiMessageMetadata metadata)
+{
            if (metadata.numBytes == 3)
            {
                if (metadata.getMessage().isNoteOn())
@@ -280,6 +287,19 @@ void HomeostasisAudioProcessor::clearDelayBufferIfNewNote(MidiBuffer& midiMessag
            feedback.circularBuffer.clearBuffer();
            newNote = false;
        }
+}
+
+void HomeostasisAudioProcessor::setDelayTImeToFreq (MidiMessageMetadata metadata)
+{
+    if (metadata.numBytes == 3)
+        {
+            auto message = metadata.getMessage();
+            if (message.isNoteOn())
+            {
+                float hz = MidiMessage::getMidiNoteInHertz(message.getNoteNumber() - 12);
+                feedback.setDelayTime(hz);
+            }
+        }
 }
 
 void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, float newValue)

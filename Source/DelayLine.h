@@ -131,7 +131,6 @@ private:
 template <typename Type>
 class FeedbackMechanism
 {
-
 public:
     void createDelayBuffers (double sampleRate, Type bufferLength_mSec)
     {
@@ -146,7 +145,12 @@ public:
         circularBuffer.makeBuffer (mBufferLength);
         
     }
-
+    
+    void setDelayTime (Type newValue)
+    {
+        mDelayTime = newValue;
+        mDelayInSamples = (unsigned int) (mDelayTime * mSamplesPerMSec);
+    }
 
     bool reset (double sampleRate)
     {

@@ -70,12 +70,18 @@ private:
  //==============================================================================
     std::vector<std::unique_ptr<RangedAudioParameter>> mParameters;
     Wavetable processor0;
+    
     AudioBuffer<float> oneSampleBuffer;
     FeedbackMechanism<float> feedback;
     
     void parameterChanged(const String &parameterID, float newValue) override;
-    void clearDelayBufferIfNewNote (MidiBuffer& midiMessages);
+    
+    void midiHandeling (MidiBuffer& midiMessages);
+    void clearDelayBufferIfNewNote (MidiMessageMetadata metadata);
+    void setDelayTImeToFreq (MidiMessageMetadata metadata);
+    
     std::atomic<bool> newNote {false};
+    
     ProcessorChain chain;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessor)
 };
