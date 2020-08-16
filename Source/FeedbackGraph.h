@@ -23,7 +23,7 @@ public:
     void prepareToPlay (double sampleRate, int samplesPerBlock)
     {
         mSampleRate = sampleRate;
-        maxBlockSize = samplesPerBlock;
+        maxBlockSize = 1;
         
         for (auto& processor : dynamicProcessors)
         {
@@ -71,6 +71,7 @@ public:
     {
         jassert (index >= 0 && index <= 3);
         dynamicProcessors[index].reset (new T);
+        setProcessorConfig(dynamicProcessors[index]);
     }
     
     template <class T>
@@ -78,6 +79,8 @@ public:
        {
            jassert (index >= 0 && index <= 3);
            dynamicProcessors[index].reset (new T (tree, index));
+           setProcessorConfig(dynamicProcessors[index]);
+
        }
     
     
@@ -113,7 +116,7 @@ private:
     std::vector<std::unique_ptr<ProcessorBase>> dynamicProcessors;
   
     uint32 maxBlockSize;
-    uint32 numChannels {2};
+    uint32 numChannels {1};
     int mSampleRate;
     
 };

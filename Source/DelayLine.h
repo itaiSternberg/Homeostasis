@@ -168,16 +168,14 @@ public:
         xn = yn;
     }
 
-    void processBuffer (AudioBuffer<Type>& inputBuffer)
+    void processOneChannelBuffer (AudioBuffer<Type>& inputBuffer, unsigned int channel )
     {
-        for (unsigned int ch = 0; ch < inputBuffer.getNumChannels(); ++ ch)
-        {
-            auto* xn = inputBuffer.getWritePointer(ch);
+
+            auto* xn = inputBuffer.getWritePointer(0);
                   for (size_t i = 0; i < inputBuffer.getNumSamples(); ++i)
                   {
-                      processSample (xn[i], circularBuffer, mDelayInSamples, ch);
+                      processSample (xn[i], circularBuffer, mDelayInSamples, channel);
                   }
-        }
 
     }
     

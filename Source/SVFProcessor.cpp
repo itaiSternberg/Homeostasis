@@ -71,6 +71,7 @@ void SVFProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = 1;
     mStateVariableFilter.reset();
     mStateVariableFilter.prepare(spec);
 }

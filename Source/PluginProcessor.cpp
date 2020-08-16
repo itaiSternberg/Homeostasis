@@ -24,7 +24,7 @@ HomeostasisAudioProcessor::HomeostasisAudioProcessor()
                        ),
         processorChoises({"Empty","Filter","Phaser","Distortion"})
         , mainTree(*this, nullptr, "SlotsParameters", MainTreeLayout())
-        , oneSampleBuffer(2, 1)
+        , oneSampleBuffer(1, 1)
 
 #endif
 {
@@ -159,17 +159,16 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     {
         auto* writePointer = buffer.getWritePointer (channel);
         const auto* readPointer = buffer.getReadPointer(channel);
-        auto* oneSampleBufferWritePtr = oneSampleBuffer.getWritePointer(channel);
-        const auto* oneSampleBufferReadPtr = oneSampleBuffer.getReadPointer(channel);
+        auto* oneSampleBufferWritePtr = oneSampleBuffer.getWritePointer(0);
+        const auto* oneSampleBufferReadPtr = oneSampleBuffer.getReadPointer(0);
 
         for (int i = 0; i < buffer.getNumSamples(); ++i)
         {
             writePointer[i] = /*dry*/ 0.5 * readPointer[i] + /*wet*/ 0.5 * oneSampleBufferReadPtr[0];
-            oneSampleBufferWritePtr[0] = 0; //clear the buffer
             oneSampleBufferWritePtr[0] = readPointer[i] * 0.5 /*feedback*/;
             chain.processBlock(oneSampleBuffer, midiMessages);
 
-            feedback.processBuffer(oneSampleBuffer);
+            feedback.processOneChannelBuffer (oneSampleBuffer, channel);
             
         }
         
