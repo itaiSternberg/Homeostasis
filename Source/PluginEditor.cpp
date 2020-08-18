@@ -19,7 +19,10 @@ HomeostasisAudioProcessorEditor::HomeostasisAudioProcessorEditor (HomeostasisAud
 , feedbackSlot2 (p.mainTree, "2")
 , feedbackSlot3 (p.mainTree, "3")
 , feedbackSlot4 (p.mainTree, "4")
-, delaySlider (Slider::SliderStyle::LinearHorizontal, Slider::TextBoxBelow)
+, masterSlot1 (p.mainTree, "5")
+, masterSlot2 (p.mainTree, "6")
+, masterSlot3 (p.mainTree, "7")
+, masterSlot4 (p.mainTree, "8")
 , panicButton ("!")
 {
     // Displaying Feedback Slots and attaching to parameters
@@ -28,14 +31,27 @@ HomeostasisAudioProcessorEditor::HomeostasisAudioProcessorEditor (HomeostasisAud
     
     addAndMakeVisible (&feedbackSlot2);
     feedbackSlot2Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot2",feedbackSlot2.fxMenu);
-
+    
     addAndMakeVisible (&feedbackSlot3);
     feedbackSlot3Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot3",feedbackSlot3.fxMenu);
-
+    
     addAndMakeVisible (&feedbackSlot4);
     feedbackSlot4Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot4",feedbackSlot4.fxMenu);
-   
-    addAndMakeVisible (&delaySlider);
+    
+    
+    addAndMakeVisible (&masterSlot1);
+    masterSlot1Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot1",feedbackSlot1.fxMenu);
+    
+    addAndMakeVisible (&masterSlot2);
+    masterSlot2Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot2",feedbackSlot2.fxMenu);
+    
+    addAndMakeVisible (&masterSlot3);
+    masterSlot3Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot3",feedbackSlot3.fxMenu);
+    
+    addAndMakeVisible (&masterSlot4);
+    masterSlot4Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot4",feedbackSlot4.fxMenu);
+    
+    
     
     addAndMakeVisible(&panicButton);
     panicButtonAttachment = std::make_unique<ButtonParameterAttachment> (*processor.mainTree.getParameter("panic"), panicButton);
@@ -59,14 +75,22 @@ void HomeostasisAudioProcessorEditor::resized()
     //Position feedback slots
     auto slotHeight = feedbackSlot1.getHeight();
     auto slotWidth = feedbackSlot1.getWidth();
+    auto constexpr slotYMargin = 30;
+    auto constexpr slotXmargin = 40;
+    auto constexpr panicButtonLength = 40;
     
-    feedbackSlot1.setBounds (40 , 50, slotWidth, slotHeight);
-    feedbackSlot2.setBounds (280, 50, slotWidth, slotHeight);
-    feedbackSlot3.setBounds (520, 50, slotWidth, slotHeight);
-    feedbackSlot4.setBounds (760, 50, slotWidth, slotHeight);
+    feedbackSlot1.setBounds (slotXmargin , slotYMargin, slotWidth, slotHeight);
+    feedbackSlot2.setBounds (2 * slotXmargin + slotWidth, slotYMargin, slotWidth, slotHeight);
+    feedbackSlot3.setBounds (3 * slotXmargin + 2 * slotWidth, slotYMargin, slotWidth, slotHeight);
+    feedbackSlot4.setBounds (4 * slotXmargin + 3 * slotWidth, slotYMargin, slotWidth, slotHeight);
     
-    delaySlider.setBounds ((getWidth() - 600) / 2, 70 + slotHeight, 600, 30);
-    panicButton.setBounds((getWidth() - 50) / 2, 130  + slotHeight, 50, 50);
+    panicButton.setBounds((getWidth() - panicButtonLength) / 2, (getHeight() - panicButtonLength) / 2, panicButtonLength, panicButtonLength);
+    
+    
+    masterSlot1.setBounds (slotXmargin , getHeight () - slotYMargin - slotHeight, slotWidth, slotHeight);
+    masterSlot2.setBounds (2 * slotXmargin + slotWidth, getHeight () - slotYMargin - slotHeight, slotWidth, slotHeight);
+    masterSlot3.setBounds (3 * slotXmargin + 2 * slotWidth, getHeight () - slotYMargin - slotHeight, slotWidth, slotHeight);
+    masterSlot4.setBounds (4 * slotXmargin + 3 * slotWidth, getHeight () - slotYMargin - slotHeight, slotWidth, slotHeight);
 
     
 }
