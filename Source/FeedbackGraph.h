@@ -16,14 +16,16 @@
 #include "PhaserProcessor.h"
 #include "DelayLine.h"
 
+template <typename Type>
 class ProcessorChain
 {
 public:
   
-    void prepareToPlay (double sampleRate, int samplesPerBlock)
+    void prepareToPlay (double sampleRate, int samplesPerBlock, int numChannels)
     {
+        mNumChannels = numChannels;
         mSampleRate = sampleRate;
-        maxBlockSize = 1;
+        maxBlockSize = samplesPerBlock;
         
         for (auto& processor : dynamicProcessors)
         {
@@ -32,7 +34,7 @@ public:
         initialiseChain();
     }
     
-    void processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
+    void processBlock (AudioBuffer<Type>& buffer, MidiBuffer& midiMessages)
     {
         for (auto& processor : dynamicProcessors)
         {
@@ -62,14 +64,13 @@ public:
     
     void setProcessorConfig (std::unique_ptr<ProcessorBase>& processor)
     {
-        processor.get()->setPlayConfigDetails(numChannels, numChannels, mSampleRate, maxBlockSize);
+        processor.get()->setPlayConfigDetails(mNumChannels, mNumChannels, mSampleRate, maxBlockSize);
     }
     
 
     template <class T>
     void repplaceProcessor (int index)
     {
-        jassert (index >= 0 && index <= 3);
         dynamicProcessors[index].reset (new T);
         setProcessorConfig(dynamicProcessors[index]);
     }
@@ -77,7 +78,6 @@ public:
     template <class T>
        void repplaceProcessor (AudioProcessorValueTreeState& tree ,int index)
        {
-           jassert (index >= 0 && index <= 3);
            dynamicProcessors[index].reset (new T (tree, index));
            setProcessorConfig(dynamicProcessors[index]);
 
@@ -116,7 +116,7 @@ private:
     std::vector<std::unique_ptr<ProcessorBase>> dynamicProcessors;
   
     uint32 maxBlockSize;
-    uint32 numChannels {1};
+    uint32 mNumChannels;
     int mSampleRate;
     
 };

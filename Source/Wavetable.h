@@ -127,14 +127,15 @@ public:
     bool acceptsMidi() const override {return true;}
     
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
-    void processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages) override;
+    void processBlock (AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) override;
+
     void reset() override;
     void resizeDelayLineToFreq (DelayLine<float> &delayLine, int lastSampleRate, const juce::MidiMessageMetadata &metadata);
 
    
 private:
     juce::Synthesiser synth;
-    DelayLine<float> delayLine;
+    DelayLine<double> delayLine;
     size_t delayLineSize;
     int lastSampleRate;
 };

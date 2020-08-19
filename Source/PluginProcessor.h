@@ -36,7 +36,6 @@ public:
    #endif
 
     void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
-
     //==============================================================================
     AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
@@ -82,7 +81,8 @@ private:
     
     std::atomic<bool> newNote {false};
     
-    ProcessorChain chain;
+    ProcessorChain<float> feedbackChain;
+    ProcessorChain<float> masterChain;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessor)
 };
 

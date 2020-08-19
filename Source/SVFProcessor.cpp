@@ -21,7 +21,7 @@ SVFProcessor::~SVFProcessor()
     
 }
 
-std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (String slotIndex)
+static std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (String slotIndex)
 {
     return std::make_unique<AudioProcessorParameterGroup> ("filter" + slotIndex,
                                         "Filter" + slotIndex,
@@ -71,7 +71,6 @@ void SVFProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = 1;
     mStateVariableFilter.reset();
     mStateVariableFilter.prepare(spec);
 }

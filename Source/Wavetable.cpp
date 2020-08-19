@@ -31,7 +31,7 @@ void Wavetable::prepareToPlay (double sampleRate, int samplesPerBlock)
 }
 
 
-void Wavetable::processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages)
+void Wavetable::processBlock (AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     
     synth.renderNextBlock(buffer, midiMessages, 0, getTotalNumOutputChannels());

@@ -33,6 +33,10 @@ HomeostasisAudioProcessor::HomeostasisAudioProcessor()
     mainTree.addParameterListener("slot2", this);
     mainTree.addParameterListener("slot3", this);
     mainTree.addParameterListener("slot4", this);
+    mainTree.addParameterListener("slot5", this);
+    mainTree.addParameterListener("slot6", this);
+    mainTree.addParameterListener("slot7", this);
+    mainTree.addParameterListener("slot8", this);
 }
 
 HomeostasisAudioProcessor::~HomeostasisAudioProcessor()
@@ -106,10 +110,14 @@ void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 {
     
     processor0.prepareToPlay(sampleRate, samplesPerBlock);
+    processor0.setPlayConfigDetails(2, 2, sampleRate, samplesPerBlock);
+
     feedback.createDelayBuffers(sampleRate, 1000);
     oneSampleBuffer.clear();
-    chain.prepareToPlay(sampleRate, samplesPerBlock);
-    processor0.setPlayConfigDetails(2, 2, sampleRate, samplesPerBlock);
+    
+    feedbackChain.prepareToPlay(sampleRate, 1, 1);
+    masterChain.prepareToPlay (sampleRate, samplesPerBlock, 2);
+    
 
 }
 
@@ -118,7 +126,8 @@ void HomeostasisAudioProcessor::releaseResources()
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
     processor0.releaseResources();
-    chain.releaseResources();
+    feedbackChain.releaseResources();
+    masterChain.releaseResources();
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -150,11 +159,11 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-    
+
     midiHandeling(midiMessages);
-    
+
     processor0.processBlock(buffer, midiMessages);
-    
+
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
     {
         auto* writePointer = buffer.getWritePointer (channel);
@@ -164,20 +173,23 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
 
         for (int i = 0; i < buffer.getNumSamples(); ++i)
         {
-            writePointer[i] = std::tanh(/*dry*/ 0.1 * readPointer[i] + /*wet*/ 0.9 * oneSampleBufferReadPtr[0]);
-            oneSampleBufferWritePtr[0] = readPointer[i] * 1.01 /*feedback*/;
-            chain.processBlock(oneSampleBuffer, midiMessages);
+            writePointer[i] = std::tanh(/*dry*/ 0.01 * readPointer[i] + /*wet*/ 0.99 * oneSampleBufferReadPtr[0]);
+            oneSampleBufferWritePtr[0] = readPointer[i] * 1.1 /*feedback*/;
+            feedbackChain.processBlock(oneSampleBuffer, midiMessages);
 
             feedback.processOneChannelBuffer (oneSampleBuffer, channel);
-            
+
         }
-        
+
+        masterChain.processBlock(buffer, midiMessages);
 
     }
-    
- 
+
+
 
 }
+
+
 
 //==============================================================================
 bool HomeostasisAudioProcessor::hasEditor() const
@@ -221,35 +233,45 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
 {
     std::vector<std::unique_ptr<AudioProcessorParameterGroup>> parameterGroups;
     parameterGroups.push_back(std::make_unique<AudioProcessorParameterGroup>("slotGroup",
-                                                   "Slot Group",
-                                                   "seperator",
-                                                   std::make_unique<AudioParameterChoice>("slot1","Slot 1", processorChoises, 0),
-                                                   std::make_unique<AudioParameterChoice>("slot2","Slot 2", processorChoises, 0),
-                                                   std::make_unique<AudioParameterChoice>("slot3","Slot 3", processorChoises, 0),
-                                                   std::make_unique<AudioParameterChoice>("slot4","Slot 4", processorChoises, 0),
-                                                   
-                                                   std::make_unique<AudioParameterBool> ("mute","Mute Input", true),
-                                                   
-                                                   std::make_unique<AudioParameterBool> ("bypass1", "Bypass 1", false),
-                                                   std::make_unique<AudioParameterBool> ("bypass2", "Bypass 2", false),
-                                                   std::make_unique<AudioParameterBool> ("bypass3", "Bypass 3", false),
-                                                   std::make_unique<AudioParameterBool> ("bypass4", "Bypass 4", false)));
+                                                                             "Slot Group",
+                                                                             "seperator",
+                                                                             std::make_unique<AudioParameterChoice>("slot1","Slot 1", processorChoises, 0),
+                                                                             std::make_unique<AudioParameterChoice>("slot2","Slot 2", processorChoises, 0),
+                                                                             std::make_unique<AudioParameterChoice>("slot3","Slot 3", processorChoises, 0),
+                                                                             std::make_unique<AudioParameterChoice>("slot4","Slot 4", processorChoises, 0),
+                                                                             std::make_unique<AudioParameterChoice>("slot5","Slot 5", processorChoises, 0),
+                                                                             std::make_unique<AudioParameterChoice>("slot6","Slot 6", processorChoises, 0),
+                                                                             std::make_unique<AudioParameterChoice>("slot7","Slot 7", processorChoises, 0),
+                                                                             std::make_unique<AudioParameterChoice>("slot8","Slot 8", processorChoises, 0)
+                                                                             ));
     
        
     parameterGroups.push_back(SVFProcessor::makeParamGroup("1"));
     parameterGroups.push_back(SVFProcessor::makeParamGroup("2"));
     parameterGroups.push_back(SVFProcessor::makeParamGroup("3"));
     parameterGroups.push_back(SVFProcessor::makeParamGroup("4"));
+    parameterGroups.push_back(SVFProcessor::makeParamGroup("5"));
+    parameterGroups.push_back(SVFProcessor::makeParamGroup("6"));
+    parameterGroups.push_back(SVFProcessor::makeParamGroup("7"));
+    parameterGroups.push_back(SVFProcessor::makeParamGroup("8"));
 
     parameterGroups.push_back(DistortionProcessor::makeParamGroup("1"));
     parameterGroups.push_back(DistortionProcessor::makeParamGroup("2"));
     parameterGroups.push_back(DistortionProcessor::makeParamGroup("3"));
     parameterGroups.push_back(DistortionProcessor::makeParamGroup("4"));
+    parameterGroups.push_back(DistortionProcessor::makeParamGroup("5"));
+    parameterGroups.push_back(DistortionProcessor::makeParamGroup("6"));
+    parameterGroups.push_back(DistortionProcessor::makeParamGroup("7"));
+    parameterGroups.push_back(DistortionProcessor::makeParamGroup("8"));
     
     parameterGroups.push_back(PhaserProcessor::makeParamGroup("1"));
     parameterGroups.push_back(PhaserProcessor::makeParamGroup("2"));
     parameterGroups.push_back(PhaserProcessor::makeParamGroup("3"));
     parameterGroups.push_back(PhaserProcessor::makeParamGroup("4"));
+    parameterGroups.push_back(PhaserProcessor::makeParamGroup("5"));
+    parameterGroups.push_back(PhaserProcessor::makeParamGroup("6"));
+    parameterGroups.push_back(PhaserProcessor::makeParamGroup("7"));
+    parameterGroups.push_back(PhaserProcessor::makeParamGroup("8"));
     
     parameterGroups.push_back(std::make_unique<AudioProcessorParameterGroup>("globalParameters",
                                                                              "Global Parameters",
@@ -296,7 +318,7 @@ void HomeostasisAudioProcessor::setDelayTImeToFreq (MidiMessageMetadata metadata
             auto message = metadata.getMessage();
             if (message.isNoteOn())
             {
-                float hz = MidiMessage::getMidiNoteInHertz(message.getNoteNumber() - 12);
+                float hz = MidiMessage::getMidiNoteInHertz(message.getNoteNumber());
                 feedback.setDelayTime(hz);
             }
         }
@@ -310,7 +332,15 @@ void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, flo
 //========================== Check which processor chosen and instantiate it.
     String choice = processorChoises.getReference(newValue);
     int paramIndex = mainTree.getParameter(parameterID)->getParameterIndex();
-    
-    chain.processorChanged(choice, paramIndex, mainTree);
+    if (paramIndex < 4)
+    {
+        feedbackChain.processorChanged(choice, paramIndex, mainTree);
+
+    }
+    else
+    {
+        masterChain.processorChanged(choice, paramIndex, mainTree);
+    }
+
 //    feedback.circularBuffer.clearBuffer();
 }

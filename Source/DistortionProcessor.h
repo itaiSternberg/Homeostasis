@@ -19,6 +19,7 @@ public:
     const String getName() const override {return "Distortion";};
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
+    
     static std::unique_ptr<AudioProcessorParameterGroup> makeParamGroup (String slotIndex);
     
 private:

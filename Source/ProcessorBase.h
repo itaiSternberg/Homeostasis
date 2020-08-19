@@ -21,8 +21,8 @@ public:
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override {}
     void releaseResources() override {}
-    void processBlock (AudioSampleBuffer& buffer, MidiBuffer&) override {}
- 
+    void processBlock (AudioBuffer<float>& buffer,
+                       MidiBuffer& midiMessages) override {};
     //==============================================================================
     AudioProcessorEditor* createEditor() override          { return nullptr; }
     bool hasEditor() const override                        { return false; }

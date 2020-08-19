@@ -40,16 +40,16 @@ HomeostasisAudioProcessorEditor::HomeostasisAudioProcessorEditor (HomeostasisAud
     
     
     addAndMakeVisible (&masterSlot1);
-    masterSlot1Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot1",feedbackSlot1.fxMenu);
+    masterSlot1Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot5",masterSlot1.fxMenu);
     
     addAndMakeVisible (&masterSlot2);
-    masterSlot2Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot2",feedbackSlot2.fxMenu);
+    masterSlot2Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot6",masterSlot2.fxMenu);
     
     addAndMakeVisible (&masterSlot3);
-    masterSlot3Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot3",feedbackSlot3.fxMenu);
+    masterSlot3Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot7",masterSlot3.fxMenu);
     
     addAndMakeVisible (&masterSlot4);
-    masterSlot4Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot4",feedbackSlot4.fxMenu);
+    masterSlot4Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot8",masterSlot4.fxMenu);
     
     
     
