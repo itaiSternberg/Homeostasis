@@ -21,7 +21,7 @@ SVFProcessor::~SVFProcessor()
     
 }
 
-static std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (String slotIndex)
+std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (String slotIndex)
 {
     return std::make_unique<AudioProcessorParameterGroup> ("filter" + slotIndex,
                                         "Filter" + slotIndex,

@@ -90,12 +90,12 @@ public:
     {
         if (juce::Random::getSystemRandom().nextBool())
         {
-            return 1;
+            return 0.2;
             
         }
         else
         {
-            return -1;
+            return -0.2;
         };
     }
     

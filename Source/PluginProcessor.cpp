@@ -24,7 +24,6 @@ HomeostasisAudioProcessor::HomeostasisAudioProcessor()
                        ),
         processorChoises({"Empty","Filter","Phaser","Distortion"})
         , mainTree(*this, nullptr, "SlotsParameters", MainTreeLayout())
-        , oneSampleBuffer(1, 1)
 
 #endif
 {
@@ -109,13 +108,11 @@ void HomeostasisAudioProcessor::changeProgramName (int index, const String& newN
 void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     
-    processor0.prepareToPlay(sampleRate, samplesPerBlock);
-    processor0.setPlayConfigDetails(2, 2, sampleRate, samplesPerBlock);
+    processor0.prepareToPlay (sampleRate, samplesPerBlock);
+    processor0.setPlayConfigDetails (2, 2, sampleRate, samplesPerBlock);
 
-    feedback.createDelayBuffers(sampleRate, 1000);
-    oneSampleBuffer.clear();
-    
-    feedbackChain.prepareToPlay(sampleRate, 1, 1);
+    circularBuffer.makeBuffer (sampleRate / 4);
+    feedbackChain.prepareToPlay (sampleRate, 1, 1);
     masterChain.prepareToPlay (sampleRate, samplesPerBlock, 2);
     
 
@@ -160,25 +157,29 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    midiHandeling(midiMessages);
+//    midiHandeling(midiMessages);
 
     processor0.processBlock(buffer, midiMessages);
-
+    double delayTime = 10000;
+    float feedback = 0.8;
+ 
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
     {
-        auto* writePointer = buffer.getWritePointer (channel);
-        const auto* readPointer = buffer.getReadPointer(channel);
-        auto* oneSampleBufferWritePtr = oneSampleBuffer.getWritePointer(0);
-        const auto* oneSampleBufferReadPtr = oneSampleBuffer.getReadPointer(0);
-
-        for (int i = 0; i < buffer.getNumSamples(); ++i)
+       
         {
-            writePointer[i] = std::tanh(/*dry*/ 0.01 * readPointer[i] + /*wet*/ 0.99 * oneSampleBufferReadPtr[0]);
-            oneSampleBufferWritePtr[0] = readPointer[i] * 1.1 /*feedback*/;
-            feedbackChain.processBlock(oneSampleBuffer, midiMessages);
 
-            feedback.processOneChannelBuffer (oneSampleBuffer, channel);
-
+            for (int i = 0; i < buffer.getNumSamples(); ++i)
+            {
+                auto xn = buffer.getSample(channel, i);
+//                auto yn = circularBuffer.readBuffer(delayTime, 0);
+                auto tempBuffer = circularBuffer.readBufferAsBuffer(delayTime);
+                feedbackChain.processBlock(tempBuffer, midiMessages);
+                auto yn = tempBuffer.getSample(0, 0);
+                auto dn = xn + (yn * feedback);
+                circularBuffer.writeBuffer(dn, 0);
+                buffer.setSample(channel, i, yn);
+            }
+//
         }
 
         masterChain.processBlock(buffer, midiMessages);
@@ -306,7 +307,7 @@ void HomeostasisAudioProcessor::clearDelayBufferIfNewNote(MidiMessageMetadata me
        
        if (newNote)
        {
-           feedback.circularBuffer.clearBuffer();
+           circularBuffer.clearBuffer();
            newNote = false;
        }
 }
@@ -319,7 +320,7 @@ void HomeostasisAudioProcessor::setDelayTImeToFreq (MidiMessageMetadata metadata
             if (message.isNoteOn())
             {
                 float hz = MidiMessage::getMidiNoteInHertz(message.getNoteNumber());
-                feedback.setDelayTime(hz);
+//                feedback.setDelayTime(hz);
             }
         }
 }

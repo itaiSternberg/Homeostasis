@@ -13,14 +13,14 @@ PhaserProcessor::PhaserProcessor(AudioProcessorValueTreeState& apvts, int slotIn
 : apvts(apvts)
 , slotIndex(String(slotIndex + 1))
 {
-    
+    phaser.reset();
 }
 void PhaserProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
-    phaser.reset();
+    spec.numChannels = 1;
     phaser.prepare(spec);
 }
 
@@ -33,7 +33,6 @@ void PhaserProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midi
 
 void PhaserProcessor::releaseResources()
 {
-    phaser.reset();
 }
 std::unique_ptr<AudioProcessorParameterGroup> PhaserProcessor::makeParamGroup (String slotIndex)
 {

@@ -70,7 +70,6 @@ public:
         mBufferLength = (unsigned int) (pow (2, ceil (log (bufferLength) / log(2))));
         wrapMask = mBufferLength - 1;
         buffer.setSize (numChannels, mBufferLength);
-        DBG(numChannels);
         clearBuffer ();
     }
     void clearBuffer ()
@@ -87,6 +86,18 @@ public:
         writeIndex &= wrapMask;
         
         // wraps around the size of the buffer
+    }
+    AudioBuffer<Type> readBufferAsBuffer ( unsigned int delayInSamples )
+    {
+        int readIndex = writeIndex - delayInSamples;
+//        int bufferLength = writeIndex - 1;
+        readIndex &= wrapMask;
+//        bufferLength &= wrapMask;
+        
+        auto* writePointer = buffer.getWritePointer (0);
+        AudioBuffer<Type> tempBuffer (&writePointer, 1, readIndex, 1);
+        return tempBuffer;
+        
     }
     
     Type readBuffer (int delayInSamples, unsigned int channel)
@@ -112,6 +123,8 @@ public:
     }
     
     AudioBuffer<Type> buffer;
+    unsigned int writeIndex;
+
     
 private:
    static double linearInterpolation (double y1, double y2, double fractional_X)
@@ -122,7 +135,6 @@ private:
         
     }
     
-    unsigned int writeIndex;
     unsigned int mBufferLength;
     unsigned int wrapMask;
 };
@@ -186,7 +198,7 @@ public:
     CircularBuffer<Type> circularBuffer;
 
 private:
-    Type mFeedback {0.5};
+    Type mFeedback {0.8};
     Type mBufferLength_mSec;
     Type mDelayTime;
     Type mWetMix;

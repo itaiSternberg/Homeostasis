@@ -36,6 +36,8 @@ public:
     
     void processBlock (AudioBuffer<Type>& buffer, MidiBuffer& midiMessages)
     {
+        juce::dsp::AudioBlock<Type> block;
+
         for (auto& processor : dynamicProcessors)
         {
             processor.get()->processBlock(buffer, midiMessages);
@@ -73,6 +75,8 @@ public:
     {
         dynamicProcessors[index].reset (new T);
         setProcessorConfig(dynamicProcessors[index]);
+        dynamicProcessors[index]->prepareToPlay (mSampleRate, maxBlockSize);
+
     }
     
     template <class T>
@@ -80,7 +84,7 @@ public:
        {
            dynamicProcessors[index].reset (new T (tree, index));
            setProcessorConfig(dynamicProcessors[index]);
-
+           dynamicProcessors[index]->prepareToPlay (mSampleRate, maxBlockSize);
        }
     
     
@@ -112,6 +116,8 @@ public:
             processor.get()->enableAllBuses();
         }
     }
+    
+//    dsp::processS
 private:
     std::vector<std::unique_ptr<ProcessorBase>> dynamicProcessors;
   

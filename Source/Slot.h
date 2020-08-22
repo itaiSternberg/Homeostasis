@@ -33,7 +33,6 @@ private:
     
     AudioProcessorValueTreeState& apvts;
 
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> fxMenuAttach;
     StringArray fxMenuOptions;
     String slotIndex;
     std::unique_ptr<Component> selectedFx  {nullptr};

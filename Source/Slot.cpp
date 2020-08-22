@@ -59,7 +59,6 @@ void Slot::comboBoxChanged(ComboBox* ComboBox)
 {
     bool is_label = false;
     Component::removeChildComponent(selectedFx.get());
-    selectedFx = nullptr;
     
     if (ComboBox->getText() == "Empty")
     {

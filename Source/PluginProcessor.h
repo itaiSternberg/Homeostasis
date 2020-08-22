@@ -70,9 +70,7 @@ private:
     std::vector<std::unique_ptr<RangedAudioParameter>> mParameters;
     Wavetable processor0;
     
-    AudioBuffer<float> oneSampleBuffer;
-    FeedbackMechanism<float> feedback;
-    
+    CircularBuffer<float, 1> circularBuffer;
     void parameterChanged(const String &parameterID, float newValue) override;
     
     void midiHandeling (MidiBuffer& midiMessages);
