@@ -79,7 +79,6 @@ private:
 
     std::vector<std::unique_ptr<RangedAudioParameter>> mParameters;
     
-    Wavetable processor0;
     
     
     

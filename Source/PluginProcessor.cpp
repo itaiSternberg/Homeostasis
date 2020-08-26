@@ -106,9 +106,6 @@ void HomeostasisAudioProcessor::changeProgramName (int index, const String& newN
 //==============================================================================
 void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    processor0.prepareToPlay (sampleRate, samplesPerBlock);
-    processor0.setPlayConfigDetails (2, 2, sampleRate, samplesPerBlock);
-    
     delayTimeInSamples = sampleRate / 4;
     circularBufferL.makeBuffer (delayTimeInSamples);
     circularBufferR.makeBuffer (delayTimeInSamples);
@@ -122,8 +119,6 @@ void HomeostasisAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
-    processor0.releaseResources();
-    
     feedbackChainL.releaseResources();
     feedbackChainR.releaseResources();
     
@@ -156,10 +151,6 @@ bool HomeostasisAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 
 void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
-//    ScopedNoDenormals noDenormals;
-//    auto totalNumInputChannels  = getTotalNumInputChannels();
-//    auto totalNumOutputChannels = getTotalNumOutputChannels();
-  
     if (shouldProcessorChange)
     {
         changeProcessors(processorThatChanged, processorIndex);
@@ -168,9 +159,8 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     
     midiHandeling(midiMessages);
 
-//    processor0.processBlock(buffer, midiMessages);
     
-    float feedback = 0.3;
+    float feedback = 0.9;
     
     constexpr int left = 0;
     constexpr int right = 1;
@@ -291,9 +281,6 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
                                                                              "seperator",
                                                                              std::make_unique<AudioParameterBool> ("panic","Panic", false, "panic!")
                                                                              ));
-
-    
-
     return {parameterGroups.begin(), parameterGroups.end()};
 }
 
@@ -316,8 +303,6 @@ void HomeostasisAudioProcessor::scrambleDelayBufferIfNewNote()
     circularBufferL.scrambleBuffer();
     circularBufferR.scrambleBuffer();
 }
-
-
 
 void HomeostasisAudioProcessor::setDelayTImeToFreq (MidiMessage message)
 {

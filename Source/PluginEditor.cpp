@@ -51,10 +51,6 @@ HomeostasisAudioProcessorEditor::HomeostasisAudioProcessorEditor (HomeostasisAud
     addAndMakeVisible (&masterSlot4);
     masterSlot4Attachment = std::make_unique<ComboBoxAttachment> (processor.mainTree,"slot8",masterSlot4.fxMenu);
     
-    
-    
-    addAndMakeVisible(&panicButton);
-    panicButtonAttachment = std::make_unique<ButtonParameterAttachment> (*processor.mainTree.getParameter("panic"), panicButton);
     setSize (1000, 600);
 }
 

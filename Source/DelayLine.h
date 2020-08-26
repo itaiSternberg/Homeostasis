@@ -12,55 +12,6 @@
 #include <JuceHeader.h>
 
 template <typename Type>
-class DelayLine
-{
-public:
-    void clear() noexcept
-    {
-        std::fill (rawData.begin(), rawData.end(), Type (0));
-    }
-    
-    size_t size() const noexcept
-    {
-        return rawData.size();
-    }
-    
-    void resize(size_t newValue)  
-    {
-        rawData.resize(newValue);
-        leastRecentIndex = 0;
-    }
-    
-    Type back() const noexcept
-    {
-        return rawData[leastRecentIndex];
-    }
-    
-    void push(Type valueToAdd) noexcept
-    {
-        rawData[leastRecentIndex] = valueToAdd;
-        leastRecentIndex = leastRecentIndex == 0 ? size() - 1 : leastRecentIndex - 1;
-    }
-    
-    Type get(size_t delayInSamples) const noexcept
-    {
-        jassert(delayInSamples >= 0 && delayInSamples <= size());
-        return rawData[(leastRecentIndex + 1 + delayInSamples) % size()];
-    }
-    
-    void set(size_t delayInSamples, Type valueToAdd) noexcept
-    {
-        jassert(delayInSamples >= 0 && delayInSamples <= size());
-        rawData[(leastRecentIndex + 1 + delayInSamples) % size()] = valueToAdd;
-    }
-        
-private:
-    std::vector<Type> rawData;
-    size_t leastRecentIndex {0};
-};
-
-
-template <typename Type>
 class CircularBuffer
 {
 public:
@@ -116,7 +67,6 @@ public:
         
         return linearInterpolation (y1, y2, frac);
     }
-
     
     void scrambleBuffer ()
     {
@@ -159,75 +109,3 @@ private:
 
 };
 
-
-template <typename Type>
-class FeedbackMechanism
-{
-public:
-    void createDelayBuffers (double sampleRate, Type bufferLength_mSec)
-    {
-        mSampleRate = sampleRate;
-        mBufferLength_mSec = bufferLength_mSec;
-
-        mSamplesPerMSec = sampleRate / 1000.0;
-
-        mBufferLength = (unsigned int) (mBufferLength_mSec * mSamplesPerMSec) + 1;
-        mDelayInSamples = (unsigned int) (mDelayTime * mSamplesPerMSec);
-        
-        circularBuffer.makeBuffer (mBufferLength);
-        
-    }
-    
-    void setDelayTime (Type newValue)
-    {
-        mDelayTime = newValue;
-        mDelayInSamples = (unsigned int) (mDelayTime * mSamplesPerMSec);
-    }
-
-    bool reset (double sampleRate)
-    {
-        if (mSampleRate == sampleRate)
-        {
-            circularBuffer.clearBuffer();
-            return true;
-        }
-
-        createDelayBuffers (sampleRate, mBufferLength_mSec);
-        return true;
-    }
-
-    void processSample (Type& xn, CircularBuffer<Type>& delayBuffer, Type delayInSamples, unsigned int channel )
-    {
-        Type yn = delayBuffer.readBuffer (delayInSamples, true, channel);
-        Type dn = xn + yn * mFeedback;
-        delayBuffer.writeBuffer(dn, channel);
-        xn = yn;
-    }
-
-    void processOneChannelBuffer (AudioBuffer<Type>& inputBuffer, unsigned int channel )
-    {
-
-            auto* xn = inputBuffer.getWritePointer(0);
-                  for (size_t i = 0; i < inputBuffer.getNumSamples(); ++i)
-                  {
-                      processSample (xn[i], circularBuffer, mDelayInSamples, channel);
-                  }
-
-    }
-  
-    
-    CircularBuffer<Type> circularBuffer;
-
-private:
-    
-    Type mFeedback {0.8};
-    Type mBufferLength_mSec;
-    Type mDelayTime;
-    Type mWetMix;
-    Type mDryMix;
-    Type mDelayInSamples ;
-    unsigned int mBufferLength;
-    Type mSampleRate;
-    Type mSamplesPerMSec;
-
-};
