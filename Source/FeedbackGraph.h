@@ -104,9 +104,10 @@ public:
         
     }
 
-private:
     juce::dsp::ProcessSpec spec;
     juce::dsp::AudioBlock<Type> block;
+
+private:
 
     std::vector<std::unique_ptr<ProcessorBase>> dynamicProcessors;
   

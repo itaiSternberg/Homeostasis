@@ -90,8 +90,7 @@ private:
     ProcessorChain<float> feedbackChainR;
    
     ProcessorChain<float> masterChain;
-
-    
+    dsp::Limiter<float> limiter;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessor)

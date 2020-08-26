@@ -112,7 +112,18 @@ void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
     feedbackChainL.prepareToPlay (sampleRate, circularBufferL.mBufferLength, 1);
     feedbackChainR.prepareToPlay (sampleRate, circularBufferL.mBufferLength, 1);
+    
     masterChain.prepareToPlay (sampleRate, samplesPerBlock, 2);
+    
+    dsp::ProcessSpec spec;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = getTotalNumOutputChannels();
+    spec.sampleRate = sampleRate;
+    
+    limiter.prepare(masterChain.spec);
+    limiter.setThreshold(-0.2);
+    limiter.setRelease(10);
+    
 }
 
 void HomeostasisAudioProcessor::releaseResources()
@@ -188,7 +199,8 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
     }
 
     masterChain.processBlock(buffer, midiMessages);
-
+    dsp::AudioBlock<float> block (buffer);
+    limiter.process(dsp::ProcessContextReplacing<float> (block));
 
 }
 
@@ -276,11 +288,6 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
     parameterGroups.push_back(PhaserProcessor::makeParamGroup("7"));
     parameterGroups.push_back(PhaserProcessor::makeParamGroup("8"));
     
-    parameterGroups.push_back(std::make_unique<AudioProcessorParameterGroup>("globalParameters",
-                                                                             "Global Parameters",
-                                                                             "seperator",
-                                                                             std::make_unique<AudioParameterBool> ("panic","Panic", false, "panic!")
-                                                                             ));
     return {parameterGroups.begin(), parameterGroups.end()};
 }
 

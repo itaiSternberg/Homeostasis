@@ -87,8 +87,6 @@ void HomeostasisAudioProcessorEditor::resized()
     masterSlot2.setBounds (2 * slotXmargin + slotWidth, getHeight () - slotYMargin - slotHeight, slotWidth, slotHeight);
     masterSlot3.setBounds (3 * slotXmargin + 2 * slotWidth, getHeight () - slotYMargin - slotHeight, slotWidth, slotHeight);
     masterSlot4.setBounds (4 * slotXmargin + 3 * slotWidth, getHeight () - slotYMargin - slotHeight, slotWidth, slotHeight);
-
-    
 }
 
 
