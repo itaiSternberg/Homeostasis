@@ -9,16 +9,20 @@
 */
 #include "SVFProcessor.h"
 
-SVFProcessor::SVFProcessor(AudioProcessorValueTreeState& apvts , int slotIndex)
+SVFProcessor::SVFProcessor(AudioProcessorValueTreeState& apvts , int slotIndex, dsp::ProcessSpec& spec, dsp::AudioBlock<float>& block, const int numChannels)
 : apvts(apvts)
 , slotIndex(String(slotIndex + 1))
-
+, mSpec (spec)
+, mBlock(block)
 {
-    mStateVariableFilter.reset();
+    mSpec.numChannels = numChannels;
+    mStateVariableFilter.prepare(mSpec);
+
 }
 SVFProcessor::~SVFProcessor()
 {
-    
+//        mStateVariableFilter.reset();
+
 }
 
 std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (String slotIndex)
@@ -66,21 +70,15 @@ std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (Stri
 
 void SVFProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    lastSampleRate = sampleRate;
 
-    dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = samplesPerBlock;
-    mStateVariableFilter.reset();
-    mStateVariableFilter.prepare(spec);
+  
+    mStateVariableFilter.prepare(mSpec);
 }
 
 void SVFProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
-   dsp::AudioBlock<float> block (buffer);
-
     updateFilter();
-    mStateVariableFilter.process(dsp::ProcessContextReplacing<float> (block));
+    mStateVariableFilter.process(dsp::ProcessContextReplacing<float> (mBlock));
 }
 
 void SVFProcessor::updateFilter ()

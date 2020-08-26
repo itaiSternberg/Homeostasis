@@ -9,26 +9,24 @@
 */
 
 #include "PhaserProcessor.h"
-PhaserProcessor::PhaserProcessor(AudioProcessorValueTreeState& apvts, int slotIndex)
+PhaserProcessor::PhaserProcessor (AudioProcessorValueTreeState& apvts , int slotIndex, dsp::ProcessSpec& spec, dsp::AudioBlock<float>& block, const int numChannels)
 : apvts(apvts)
 , slotIndex(String(slotIndex + 1))
+, mSpec (spec)
+, mBlock(block)
+
 {
     phaser.reset();
 }
 void PhaserProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = 1;
-    phaser.prepare(spec);
+    phaser.prepare(mSpec);
 }
 
 void PhaserProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
     updatePhaser();
-    dsp::AudioBlock<float> block (buffer);
-    phaser.process(dsp::ProcessContextReplacing <float> (block));
+    phaser.process(dsp::ProcessContextReplacing <float> (mBlock));
 }
 
 void PhaserProcessor::releaseResources()

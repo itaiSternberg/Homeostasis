@@ -66,21 +66,35 @@ public:
     AudioProcessorValueTreeState mainTree;
 
 private:
- //==============================================================================
-    std::vector<std::unique_ptr<RangedAudioParameter>> mParameters;
-    Wavetable processor0;
-    
-    CircularBuffer<float, 1> circularBuffer;
     void parameterChanged(const String &parameterID, float newValue) override;
     
+    void changeProcessors (String choice, int paramIndex);
+    std::atomic<bool> shouldProcessorChange;
+    String processorThatChanged;
+    int processorIndex;
+    
     void midiHandeling (MidiBuffer& midiMessages);
-    void clearDelayBufferIfNewNote (MidiMessageMetadata metadata);
-    void setDelayTImeToFreq (MidiMessageMetadata metadata);
+    void scrambleDelayBufferIfNewNote ();
+    void setDelayTImeToFreq (MidiMessage message);
+
+    std::vector<std::unique_ptr<RangedAudioParameter>> mParameters;
     
-    std::atomic<bool> newNote {false};
+    Wavetable processor0;
     
-    ProcessorChain<float> feedbackChain;
+    
+    
+    double delayTimeInSamples;
+    CircularBuffer<float> circularBufferL;
+    CircularBuffer<float> circularBufferR;
+    
+    ProcessorChain<float> feedbackChainL;
+    ProcessorChain<float> feedbackChainR;
+   
     ProcessorChain<float> masterChain;
+
+    
+
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessor)
 };
 

@@ -60,7 +60,7 @@ private:
 };
 
 
-template <typename Type, size_t numChannels = 2>
+template <typename Type>
 class CircularBuffer
 {
 public:
@@ -69,7 +69,7 @@ public:
         writeIndex = 0;
         mBufferLength = (unsigned int) (pow (2, ceil (log (bufferLength) / log(2))));
         wrapMask = mBufferLength - 1;
-        buffer.setSize (numChannels, mBufferLength);
+        buffer.setSize (1, mBufferLength);
         clearBuffer ();
     }
     void clearBuffer ()
@@ -77,22 +77,19 @@ public:
         buffer.clear();
     }
     
-    void writeBuffer (Type newValue, unsigned int channel)
+    void writeBuffer (Type newValue)
     {
-        jassert (channel >= 0 && channel <= buffer.getNumChannels());
-        
-        auto* writePointer = buffer.getWritePointer( channel);
+        auto* writePointer = buffer.getWritePointer (0);
         writePointer[writeIndex++] = newValue;  // writes the newsample to the position of the writeindex then increments it
         writeIndex &= wrapMask;
         
         // wraps around the size of the buffer
     }
+    
     AudioBuffer<Type> readBufferAsBuffer ( unsigned int delayInSamples )
     {
         int readIndex = writeIndex - delayInSamples;
-//        int bufferLength = writeIndex - 1;
         readIndex &= wrapMask;
-//        bufferLength &= wrapMask;
         
         auto* writePointer = buffer.getWritePointer (0);
         AudioBuffer<Type> tempBuffer (&writePointer, 1, readIndex, 1);
@@ -100,33 +97,44 @@ public:
         
     }
     
-    Type readBuffer (int delayInSamples, unsigned int channel)
+    Type readBuffer (int delayInSamples)
     {
-        jassert (channel >= 0 && channel <= buffer.getNumChannels());
-
-        const auto* readPointer = buffer.getReadPointer (channel);
+        const auto* readPointer = buffer.getReadPointer (0);
         int readIndex = writeIndex - delayInSamples;
         readIndex &= wrapMask;            // wraps the readIndex
         return readPointer [readIndex];         // returns the sample at the buffer
     }
     
-    Type readBuffer (double delayInFractionalSamples, bool interpolate, unsigned int channel)
+    Type readBuffer (double delayInFractionalSamples, bool interpolate)
     {
-        Type y1 =  readBuffer ((int) delayInFractionalSamples, channel);
+        Type y1 =  readBuffer ((int) delayInFractionalSamples);
         if (!interpolate) return y1;
         
-        Type y2 = (int) readBuffer ((int) (delayInFractionalSamples + 1) , channel);
+        Type y2 = (int) readBuffer ((int) (delayInFractionalSamples + 1));
         
         double frac = delayInFractionalSamples - (int) delayInFractionalSamples;
         
         return linearInterpolation (y1, y2, frac);
     }
+
+    
+    void scrambleBuffer ()
+    {
+        for (int i = 0; i < buffer.getNumSamples(); ++i)
+        {
+            float randomSample = randomSampleGen();
+            writeBuffer(randomSample);
+        }
+    }
     
     AudioBuffer<Type> buffer;
     unsigned int writeIndex;
+    unsigned int mBufferLength;
+    unsigned int wrapMask;
 
     
 private:
+    
    static double linearInterpolation (double y1, double y2, double fractional_X)
     {
         if (fractional_X >= 1.0) return y2;
@@ -135,8 +143,20 @@ private:
         
     }
     
-    unsigned int mBufferLength;
-    unsigned int wrapMask;
+    float randomSampleGen ()
+    {
+        if (juce::Random::getSystemRandom().nextBool())
+        {
+            return 0.2;
+            
+        }
+        else
+        {
+            return -0.2;
+        }
+    }
+    
+
 };
 
 
@@ -194,10 +214,12 @@ public:
                   }
 
     }
+  
     
     CircularBuffer<Type> circularBuffer;
 
 private:
+    
     Type mFeedback {0.8};
     Type mBufferLength_mSec;
     Type mDelayTime;

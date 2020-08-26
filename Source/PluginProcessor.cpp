@@ -24,7 +24,6 @@ HomeostasisAudioProcessor::HomeostasisAudioProcessor()
                        ),
         processorChoises({"Empty","Filter","Phaser","Distortion"})
         , mainTree(*this, nullptr, "SlotsParameters", MainTreeLayout())
-
 #endif
 {
     mainTree.state.addListener(this);
@@ -107,15 +106,16 @@ void HomeostasisAudioProcessor::changeProgramName (int index, const String& newN
 //==============================================================================
 void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    
     processor0.prepareToPlay (sampleRate, samplesPerBlock);
     processor0.setPlayConfigDetails (2, 2, sampleRate, samplesPerBlock);
-
-    circularBuffer.makeBuffer (sampleRate / 4);
-    feedbackChain.prepareToPlay (sampleRate, 1, 1);
-    masterChain.prepareToPlay (sampleRate, samplesPerBlock, 2);
     
-
+    delayTimeInSamples = sampleRate / 4;
+    circularBufferL.makeBuffer (delayTimeInSamples);
+    circularBufferR.makeBuffer (delayTimeInSamples);
+    
+    feedbackChainL.prepareToPlay (sampleRate, circularBufferL.mBufferLength, 1);
+    feedbackChainR.prepareToPlay (sampleRate, circularBufferL.mBufferLength, 1);
+    masterChain.prepareToPlay (sampleRate, samplesPerBlock, 2);
 }
 
 void HomeostasisAudioProcessor::releaseResources()
@@ -123,7 +123,10 @@ void HomeostasisAudioProcessor::releaseResources()
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
     processor0.releaseResources();
-    feedbackChain.releaseResources();
+    
+    feedbackChainL.releaseResources();
+    feedbackChainR.releaseResources();
+    
     masterChain.releaseResources();
 }
 
@@ -153,39 +156,48 @@ bool HomeostasisAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 
 void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
-    ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-//    midiHandeling(midiMessages);
-
-    processor0.processBlock(buffer, midiMessages);
-    double delayTime = 10000;
-    float feedback = 0.8;
- 
-    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+//    ScopedNoDenormals noDenormals;
+//    auto totalNumInputChannels  = getTotalNumInputChannels();
+//    auto totalNumOutputChannels = getTotalNumOutputChannels();
+  
+    if (shouldProcessorChange)
     {
-       
-        {
+        changeProcessors(processorThatChanged, processorIndex);
+        shouldProcessorChange = false;
+    }
+    
+    midiHandeling(midiMessages);
 
-            for (int i = 0; i < buffer.getNumSamples(); ++i)
-            {
-                auto xn = buffer.getSample(channel, i);
-//                auto yn = circularBuffer.readBuffer(delayTime, 0);
-                auto tempBuffer = circularBuffer.readBufferAsBuffer(delayTime);
-                feedbackChain.processBlock(tempBuffer, midiMessages);
-                auto yn = tempBuffer.getSample(0, 0);
-                auto dn = xn + (yn * feedback);
-                circularBuffer.writeBuffer(dn, 0);
-                buffer.setSample(channel, i, yn);
-            }
-//
-        }
-
-        masterChain.processBlock(buffer, midiMessages);
-
+//    processor0.processBlock(buffer, midiMessages);
+    
+    float feedback = 0.3;
+    
+    constexpr int left = 0;
+    constexpr int right = 1;
+ 
+    for (int i = 0; i < buffer.getNumSamples(); ++i)
+    {
+        auto xn = buffer.getSample(left, i);
+        auto tempBuffer = circularBufferL.readBufferAsBuffer(delayTimeInSamples);
+        feedbackChainL.processBlock(tempBuffer, midiMessages);
+        auto yn = tempBuffer.getSample(0, 0);
+        auto dn = xn + (yn * feedback);
+        circularBufferL.writeBuffer(dn);
+        buffer.setSample(left, i, std::tanh(yn));
+    }
+    
+    for (int i = 0; i < buffer.getNumSamples(); ++i)
+    {
+        auto xn = buffer.getSample(right, i);
+        auto tempBuffer = circularBufferR.readBufferAsBuffer(delayTimeInSamples);
+        feedbackChainR.processBlock(tempBuffer, midiMessages);
+        auto yn = tempBuffer.getSample(0, 0);
+        auto dn = xn + (yn * feedback);
+        circularBufferR.writeBuffer(dn);
+        buffer.setSample(right, i, std::tanh(yn));
     }
 
+    masterChain.processBlock(buffer, midiMessages);
 
 
 }
@@ -291,57 +303,47 @@ void HomeostasisAudioProcessor::midiHandeling(MidiBuffer& midiMessages)
 {
     for (const MidiMessageMetadata metadata : midiMessages)
     {
-        clearDelayBufferIfNewNote(metadata);
-        setDelayTImeToFreq(metadata);
-    }
-}
-void HomeostasisAudioProcessor::clearDelayBufferIfNewNote(MidiMessageMetadata metadata)
-{
-           if (metadata.numBytes == 3)
-           {
-               if (metadata.getMessage().isNoteOn())
-               {
-                   newNote = true;
-               }
-           }
-       
-       if (newNote)
-       {
-           circularBuffer.clearBuffer();
-           newNote = false;
-       }
-}
-
-void HomeostasisAudioProcessor::setDelayTImeToFreq (MidiMessageMetadata metadata)
-{
-    if (metadata.numBytes == 3)
+        if (metadata.numBytes == 3 && metadata.getMessage().isNoteOn())
         {
             auto message = metadata.getMessage();
-            if (message.isNoteOn())
-            {
-                float hz = MidiMessage::getMidiNoteInHertz(message.getNoteNumber());
-//                feedback.setDelayTime(hz);
-            }
+            scrambleDelayBufferIfNewNote();
+            setDelayTImeToFreq(message);
         }
+    }
+}
+void HomeostasisAudioProcessor::scrambleDelayBufferIfNewNote()
+{
+    circularBufferL.scrambleBuffer();
+    circularBufferR.scrambleBuffer();
+}
+
+
+
+void HomeostasisAudioProcessor::setDelayTImeToFreq (MidiMessage message)
+{
+    double freq = MidiMessage::getMidiNoteInHertz(message.getNoteNumber());
+    delayTimeInSamples = getSampleRate() / freq;
 }
 
 void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-    
-    
 
 //========================== Check which processor chosen and instantiate it.
-    String choice = processorChoises.getReference(newValue);
-    int paramIndex = mainTree.getParameter(parameterID)->getParameterIndex();
-    if (paramIndex < 4)
-    {
-        feedbackChain.processorChanged(choice, paramIndex, mainTree);
+    processorThatChanged = processorChoises.getReference(newValue);
+    processorIndex = mainTree.getParameter(parameterID)->getParameterIndex();
+    shouldProcessorChange = true;
+    
+}
 
-    }
-    else
-    {
-        masterChain.processorChanged(choice, paramIndex, mainTree);
-    }
-
-//    feedback.circularBuffer.clearBuffer();
+void HomeostasisAudioProcessor::changeProcessors (String choice, int paramIndex)
+{
+        if (paramIndex < 4)
+        {
+            feedbackChainL.processorChanged(choice, paramIndex, mainTree);
+            feedbackChainR.processorChanged(choice, paramIndex, mainTree);
+        }
+        else
+        {
+            masterChain.processorChanged(choice, paramIndex, mainTree);
+        }
 }
