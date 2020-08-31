@@ -31,10 +31,8 @@ SVF::SVF(AudioProcessorValueTreeState& apvts, String slotIndex)
     addAndMakeVisible(&mFilterTypeBox);
     mFilterTypeAttach = std::make_unique<ComboBoxAttachment> (apvts, "filterType" + slotIndex, mFilterTypeBox);
     
-    
     addAndMakeVisible(&cutOffFreqLabel);
     addAndMakeVisible(&resonanceLabel);
-
 }
 
 SVF::~SVF()
@@ -44,10 +42,10 @@ SVF::~SVF()
 void SVF::paint (Graphics& g)
 {
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
-        Rectangle<float> frame (10, 10, getWidth() - 20 , getHeight() - 20);
-        g.setColour (Colours::white);
-        g.drawRoundedRectangle(frame, 3.5f, 1.5f);
-    }
+    Rectangle<float> frame (10, 10, getWidth() - 20 , getHeight() - 20);
+    g.setColour (Colours::white);
+    g.drawRoundedRectangle(frame, 3.5f, 1.5f);
+}
 
 void SVF::resized()
 {
@@ -59,6 +57,4 @@ void SVF::resized()
     resonanceLabel.setBounds(110, 160, 45 , 30 );
     resonanceLabel.setJustificationType(Justification::centred);
     cutOffFreqLabel.setJustificationType(Justification::centred);
-
-
 }

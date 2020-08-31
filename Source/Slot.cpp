@@ -32,13 +32,6 @@ Slot::~Slot()
 
 void Slot::paint (Graphics& g)
 {
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
-
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));   // clear the background
 
     g.setColour (Colours::grey);
@@ -46,13 +39,11 @@ void Slot::paint (Graphics& g)
 
     g.setColour (Colours::white);
     g.setFont (14.0f);
-    
 }
 
 void Slot::resized()
 {
     fxMenu.setBounds(0, 0, getWidth(), 25);
-
 }
 
 void Slot::comboBoxChanged(ComboBox* ComboBox)
@@ -81,15 +72,11 @@ void Slot::comboBoxChanged(ComboBox* ComboBox)
     Component::addAndMakeVisible(selectedFx.get());
     selectedFx->setBounds(5, 26, getWidth() - 10, getHeight() - 30);
     
-   
     if (is_label)
     {
         dynamic_cast<Label*>(selectedFx.get())->setJustificationType(Justification::centred);
     }
-    
     repaint();
-
-
 }
 
 

@@ -23,7 +23,6 @@ HomeostasisAudioProcessorEditor::HomeostasisAudioProcessorEditor (HomeostasisAud
 , masterSlot2 (p.mainTree, "6")
 , masterSlot3 (p.mainTree, "7")
 , masterSlot4 (p.mainTree, "8")
-, panicButton ("!")
 {
     // Displaying Feedback Slots and attaching to parameters
     addAndMakeVisible (&feedbackSlot1);
@@ -79,9 +78,7 @@ void HomeostasisAudioProcessorEditor::resized()
     feedbackSlot2.setBounds (2 * slotXmargin + slotWidth, slotYMargin, slotWidth, slotHeight);
     feedbackSlot3.setBounds (3 * slotXmargin + 2 * slotWidth, slotYMargin, slotWidth, slotHeight);
     feedbackSlot4.setBounds (4 * slotXmargin + 3 * slotWidth, slotYMargin, slotWidth, slotHeight);
-    
-    panicButton.setBounds((getWidth() - panicButtonLength) / 2, (getHeight() - panicButtonLength) / 2, panicButtonLength, panicButtonLength);
-    
+        
     
     masterSlot1.setBounds (slotXmargin , getHeight () - slotYMargin - slotHeight, slotWidth, slotHeight);
     masterSlot2.setBounds (2 * slotXmargin + slotWidth, getHeight () - slotYMargin - slotHeight, slotWidth, slotHeight);

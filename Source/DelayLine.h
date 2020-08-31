@@ -22,7 +22,10 @@ public:
         wrapMask = mBufferLength - 1;
         buffer.setSize (1, mBufferLength);
         clearBuffer ();
+        writePointer = buffer.getWritePointer (0);
+        readPointer = buffer.getReadPointer (0);
     }
+    
     void clearBuffer ()
     {
         buffer.clear();
@@ -30,11 +33,8 @@ public:
     
     void writeBuffer (Type newValue)
     {
-        auto* writePointer = buffer.getWritePointer (0);
         writePointer[writeIndex++] = newValue;  // writes the newsample to the position of the writeindex then increments it
-        writeIndex &= wrapMask;
-        
-        // wraps around the size of the buffer
+        writeIndex &= wrapMask; // wraps around the size of the buffer
     }
     
     AudioBuffer<Type> readBufferAsBuffer ( unsigned int delayInSamples )
@@ -45,13 +45,11 @@ public:
         auto* writePointer = buffer.getWritePointer (0);
         AudioBuffer<Type> tempBuffer (&writePointer, 1, readIndex, 1);
         return tempBuffer;
-        
     }
     
     Type readBuffer (int delayInSamples)
     {
-        const auto* readPointer = buffer.getReadPointer (0);
-        int readIndex = writeIndex - delayInSamples;
+                 int readIndex = writeIndex - delayInSamples;
         readIndex &= wrapMask;            // wraps the readIndex
         return readPointer [readIndex];         // returns the sample at the buffer
     }
@@ -76,36 +74,23 @@ public:
             writeBuffer(randomSample);
         }
     }
-    
+    float* writePointer;
+    const float* readPointer;
     AudioBuffer<Type> buffer;
     unsigned int writeIndex;
     unsigned int mBufferLength;
     unsigned int wrapMask;
-
-    
 private:
-    
-   static double linearInterpolation (double y1, double y2, double fractional_X)
-    {
-        if (fractional_X >= 1.0) return y2;
-        
-        return fractional_X * y2 + (1.0 - fractional_X) * y1;
-        
-    }
-    
     float randomSampleGen ()
     {
         if (juce::Random::getSystemRandom().nextBool())
         {
             return 0.2;
-            
         }
         else
         {
             return -0.2;
         }
     }
-    
-
 };
 

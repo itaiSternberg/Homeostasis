@@ -58,9 +58,8 @@ public:
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-    
-
     //==============================================================================
+    
     AudioProcessorValueTreeState::ParameterLayout MainTreeLayout ();
     StringArray processorChoises;
     AudioProcessorValueTreeState mainTree;
@@ -74,13 +73,9 @@ private:
     int processorIndex;
     
     void midiHandeling (MidiBuffer& midiMessages);
-    void scrambleDelayBufferIfNewNote ();
-    void setDelayTImeToFreq (MidiMessage message);
+    void setDelayTimeToFreq (MidiMessage message);
 
     std::vector<std::unique_ptr<RangedAudioParameter>> mParameters;
-    
-    
-    
     
     double delayTimeInSamples;
     CircularBuffer<float> circularBufferL;
@@ -90,9 +85,11 @@ private:
     ProcessorChain<float> feedbackChainR;
    
     ProcessorChain<float> masterChain;
+    
+    
     dsp::Limiter<float> limiter;
-
-
+    dsp::Gain<float> gain;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessor)
 };
 

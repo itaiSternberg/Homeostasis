@@ -81,10 +81,8 @@ public:
         dynamicProcessors[index].reset(p);
     }
     
-    
-    void processorChanged (String choice,int paramIndex, AudioProcessorValueTreeState& tree)         //========================== Check which processor chosen and instantiate it.
+    void processorChanged (String choice,int paramIndex, AudioProcessorValueTreeState& tree)         /* Check which processor chosen and instantiate                                                                                                  it.*/
     {
-        
         if (choice == "Empty")
         {
             replaceProcessor<ProcessorBase> (paramIndex);
@@ -101,18 +99,13 @@ public:
         {
             replaceProcessor<DistortionProcessor> (paramIndex, tree, paramIndex);
         }
-        
     }
-
     juce::dsp::ProcessSpec spec;
     juce::dsp::AudioBlock<Type> block;
-
 private:
-
     std::vector<std::unique_ptr<ProcessorBase>> dynamicProcessors;
   
     uint32 maxBlockSize;
     uint32 mNumChannels;
     int mSampleRate;
-    
 };

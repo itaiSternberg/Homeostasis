@@ -106,24 +106,30 @@ void HomeostasisAudioProcessor::changeProgramName (int index, const String& newN
 //==============================================================================
 void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    // creating the left and right c. buffers in the size of samplerate/ 4
     delayTimeInSamples = sampleRate / 4;
     circularBufferL.makeBuffer (delayTimeInSamples);
     circularBufferR.makeBuffer (delayTimeInSamples);
     
+    //preparing the feedback chain
     feedbackChainL.prepareToPlay (sampleRate, circularBufferL.mBufferLength, 1);
     feedbackChainR.prepareToPlay (sampleRate, circularBufferL.mBufferLength, 1);
     
+    //preparing the master chain
     masterChain.prepareToPlay (sampleRate, samplesPerBlock, 2);
     
+    // creating a spec object that feeds the configuration to the limiter and gain processors
     dsp::ProcessSpec spec;
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = getTotalNumOutputChannels();
     spec.sampleRate = sampleRate;
     
-    limiter.prepare(masterChain.spec);
+    limiter.prepare(spec);
     limiter.setThreshold(-0.2);
-    limiter.setRelease(10);
+    limiter.setRelease(20);
     
+    gain.prepare(spec);
+    gain.setGainDecibels(-12);
 }
 
 void HomeostasisAudioProcessor::releaseResources()
@@ -200,8 +206,9 @@ void HomeostasisAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBu
 
     masterChain.processBlock(buffer, midiMessages);
     dsp::AudioBlock<float> block (buffer);
-    limiter.process(dsp::ProcessContextReplacing<float> (block));
-
+    auto context = dsp::ProcessContextReplacing<float> (block);
+    limiter.process(context);
+    gain.process(context);
 }
 
 
@@ -237,10 +244,6 @@ AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new HomeostasisAudioProcessor();
 }
-
-
-
-
 
 //Layout for defining FX Slot Parameters
 
@@ -290,9 +293,7 @@ AudioProcessorValueTreeState::ParameterLayout HomeostasisAudioProcessor::MainTre
     
     return {parameterGroups.begin(), parameterGroups.end()};
 }
-
 //==============================================================================
-
 void HomeostasisAudioProcessor::midiHandeling(MidiBuffer& midiMessages)
 {
     for (const MidiMessageMetadata metadata : midiMessages)
@@ -300,18 +301,14 @@ void HomeostasisAudioProcessor::midiHandeling(MidiBuffer& midiMessages)
         if (metadata.numBytes == 3 && metadata.getMessage().isNoteOn())
         {
             auto message = metadata.getMessage();
-            scrambleDelayBufferIfNewNote();
-            setDelayTImeToFreq(message);
+            circularBufferL.scrambleBuffer();
+            circularBufferR.scrambleBuffer();
+            setDelayTimeToFreq(message);
         }
     }
 }
-void HomeostasisAudioProcessor::scrambleDelayBufferIfNewNote()
-{
-    circularBufferL.scrambleBuffer();
-    circularBufferR.scrambleBuffer();
-}
 
-void HomeostasisAudioProcessor::setDelayTImeToFreq (MidiMessage message)
+void HomeostasisAudioProcessor::setDelayTimeToFreq (MidiMessage message)
 {
     double freq = MidiMessage::getMidiNoteInHertz(message.getNoteNumber());
     delayTimeInSamples = getSampleRate() / freq;
@@ -319,12 +316,10 @@ void HomeostasisAudioProcessor::setDelayTImeToFreq (MidiMessage message)
 
 void HomeostasisAudioProcessor::parameterChanged (const String &parameterID, float newValue)
 {
-
-//========================== Check which processor chosen and instantiate it.
+    //Check which processor chosen and instantiate it.
     processorThatChanged = processorChoises.getReference(newValue);
     processorIndex = mainTree.getParameter(parameterID)->getParameterIndex();
     shouldProcessorChange = true;
-    
 }
 
 void HomeostasisAudioProcessor::changeProcessors (String choice, int paramIndex)

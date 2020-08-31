@@ -30,8 +30,7 @@ private:
     float lastSampleRate;
     void updateFilter ();
     dsp::StateVariableTPTFilter<float> mStateVariableFilter;
-
-
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SVFProcessor)
 };
 
 

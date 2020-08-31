@@ -98,11 +98,9 @@ void PhaserProcessor::updatePhaser()
     float rate = *apvts.getRawParameterValue("phaserRate" + slotIndex);
     float depth = *apvts.getRawParameterValue("phaserDepth" + slotIndex);
     float feedback = *apvts.getRawParameterValue("phaserFeedback" + slotIndex);
-    float freq = *apvts.getRawParameterValue("phaserFreq" + slotIndex);
     
     phaser.setMix(mix);
     phaser.setRate(rate);
     phaser.setDepth(depth);
     phaser.setFeedback(feedback);
-//    phaser.setCentreFrequency(2);
 }

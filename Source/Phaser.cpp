@@ -23,9 +23,6 @@ Phaser::Phaser (AudioProcessorValueTreeState& apvts, String slotIndex)
 , feedbackLabel("feedback","Feedback")
 , mixLabel("mix","Mix")
 {
-    addAndMakeVisible(&freqSlider);
-    freqAttach = std::make_unique<SliderAttachment>(apvts, "phaserFreq" + slotIndex, freqSlider);
-    
     addAndMakeVisible(&rateSlider);
     rateAttach = std::make_unique<SliderAttachment>(apvts, "phaserRate" + slotIndex, rateSlider);
 

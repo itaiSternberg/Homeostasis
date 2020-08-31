@@ -70,8 +70,6 @@ std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (Stri
 
 void SVFProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-
-  
     mStateVariableFilter.prepare(mSpec);
 }
 
@@ -86,26 +84,26 @@ void SVFProcessor::updateFilter ()
     float resonance = *apvts.getRawParameterValue("res" + slotIndex);
     float freq = *apvts.getRawParameterValue("cutoff"  + slotIndex);
     int choice = *apvts.getRawParameterValue("filterType" + slotIndex);
-
+    
     if (choice == 0)
     {
         mStateVariableFilter.setType(dsp::StateVariableTPTFilterType::highpass);
         mStateVariableFilter.setCutoffFrequency(freq);
         mStateVariableFilter.setResonance(resonance);
-
+        
     } else if (choice == 1)
-
+        
     {
-       mStateVariableFilter.setType(dsp::StateVariableTPTFilterType::lowpass);
+        mStateVariableFilter.setType(dsp::StateVariableTPTFilterType::lowpass);
         mStateVariableFilter.setCutoffFrequency(freq);
         mStateVariableFilter.setResonance(resonance);
     } else
     {
         mStateVariableFilter.setType(dsp::StateVariableTPTFilterType::bandpass);
-               mStateVariableFilter.setCutoffFrequency(freq);
-               mStateVariableFilter.setResonance(resonance);
+        mStateVariableFilter.setCutoffFrequency(freq);
+        mStateVariableFilter.setResonance(resonance);
     }
-
+    
 }
 
 

@@ -53,7 +53,5 @@ private:
     std::unique_ptr<ComboBoxAttachment> masterSlot3Attachment;
     std::unique_ptr<ComboBoxAttachment> masterSlot4Attachment;
     
-    TextButton panicButton;
-    std::unique_ptr<ButtonParameterAttachment> panicButtonAttachment;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HomeostasisAudioProcessorEditor)
 };

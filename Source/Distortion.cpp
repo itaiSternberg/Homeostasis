@@ -39,6 +39,8 @@ void Distortion::paint (juce::Graphics& g)
            Rectangle<float> frame (10, 10, getWidth() - 20 , getHeight() - 20);
            g.setColour (Colours::white);
            g.drawRoundedRectangle(frame, 3.5f, 1.5f);
+    driveLabel.setJustificationType(Justification::centred);
+    outputLabel.setJustificationType(Justification::centred);
 }
 
 void Distortion::resized()
@@ -48,6 +50,5 @@ void Distortion::resized()
     
     driveLabel.setBounds(20, 160 , 45 , 30 );
     outputLabel.setBounds(110, 160, 45 , 30 );
-    driveLabel.setJustificationType(Justification::centred);
-    outputLabel.setJustificationType(Justification::centred);
+  
 }
