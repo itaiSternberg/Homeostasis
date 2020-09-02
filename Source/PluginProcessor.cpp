@@ -107,9 +107,10 @@ void HomeostasisAudioProcessor::changeProgramName (int index, const String& newN
 void HomeostasisAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // creating the left and right c. buffers in the size of samplerate/ 4
-    delayTimeInSamples = sampleRate / 4;
+   delayTimeInSamples = sampleRate / 4;
     circularBufferL.makeBuffer (delayTimeInSamples);
     circularBufferR.makeBuffer (delayTimeInSamples);
+
     
     //preparing the feedback chain
     feedbackChainL.prepareToPlay (sampleRate, circularBufferL.mBufferLength, 1);
@@ -151,8 +152,7 @@ bool HomeostasisAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
   #else
     // This is the place where you check if the layout is supported.
     // In this template code we only support mono or stereo.
-    if (layouts.getMainOutputChannelSet() != AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != AudioChannelSet::stereo())
+    if (layouts.getMainOutputChannelSet() != AudioChannelSet::stereo())
         return false;
 
     // This checks if the input layout matches the output layout
@@ -304,6 +304,13 @@ void HomeostasisAudioProcessor::midiHandeling(MidiBuffer& midiMessages)
             circularBufferL.scrambleBuffer();
             circularBufferR.scrambleBuffer();
             setDelayTimeToFreq(message);
+        }
+        if (metadata.numBytes == 3 && metadata.getMessage().isNoteOff())
+        {
+            feedbackChainL.releaseResources();
+            feedbackChainR.releaseResources();
+            
+            masterChain.releaseResources();
         }
     }
 }

@@ -2,13 +2,11 @@
 
 <JUCERPROJECT id="EttBN4" name="Homeostasis" projectType="audioplug" displaySplashScreen="1"
               jucerFormatVersion="1" pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
-              useAppConfig="1">
+              useAppConfig="1" pluginManufacturer="Itai Devices">
   <MAINGROUP id="lvXMxC" name="Homeostasis">
     <GROUP id="{4C325697-144E-A12A-0B03-8AB6CD45DF0D}" name="Source">
       <GROUP id="{EB4C6215-54D1-520D-19B8-4A3C2F7C5A86}" name="DSP">
         <GROUP id="{88FD7502-4BA1-9310-C954-21B31F02B288}" name="Processors">
-          <FILE id="O2S4gW" name="Wavetable.cpp" compile="1" resource="0" file="Source/Wavetable.cpp"/>
-          <FILE id="JyJdkZ" name="Wavetable.h" compile="0" resource="0" file="Source/Wavetable.h"/>
           <FILE id="u2q6Pv" name="PhaserProcessor.cpp" compile="1" resource="0"
                 file="Source/PhaserProcessor.cpp"/>
           <FILE id="qoNaaw" name="PhaserProcessor.h" compile="0" resource="0"

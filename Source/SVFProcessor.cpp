@@ -21,8 +21,6 @@ SVFProcessor::SVFProcessor(AudioProcessorValueTreeState& apvts , int slotIndex, 
 }
 SVFProcessor::~SVFProcessor()
 {
-//        mStateVariableFilter.reset();
-
 }
 
 std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (String slotIndex)

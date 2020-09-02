@@ -51,15 +51,20 @@ void DistortionProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& 
 }
 std::unique_ptr<AudioProcessorParameterGroup> DistortionProcessor::makeParamGroup (String slotIndex)
 {
+    float maxDrive = 1;
 
+   if (slotIndex.getIntValue() > 4)
+    {
+        maxDrive = 50;
+    }
     return std::make_unique<AudioProcessorParameterGroup> ("distortion" + slotIndex,
                                                            "Distortion " + slotIndex,
                                                            "|",
                                                            std::make_unique<AudioParameterFloat>("drive" + slotIndex,
                                                                                                  "Drive" + slotIndex,
                                                                                                  NormalisableRange<float> (0.0f,
-                                                                                                                           50.0f,
-                                                                                                                              0.1f,
+                                                                                                                           maxDrive,
+                                                                                                                              0.01f,
                                                                                                                               1
                                                                                                                               )
                                                                                                  ,

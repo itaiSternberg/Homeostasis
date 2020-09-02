@@ -78,10 +78,11 @@ public:
     {
         auto* p = new T (std::forward<Args>(args)...);
         p->setPlayConfigDetails(mNumChannels, mNumChannels, mSampleRate, maxBlockSize);
+        p->prepareToPlay(mSampleRate, maxBlockSize);
         dynamicProcessors[index].reset(p);
     }
     
-    void processorChanged (String choice,int paramIndex, AudioProcessorValueTreeState& tree)         /* Check which processor chosen and instantiate                                                                                                  it.*/
+    void processorChanged (String choice,int paramIndex, AudioProcessorValueTreeState& tree)         // Check which processor chosen and instantiates it
     {
         if (choice == "Empty")
         {
