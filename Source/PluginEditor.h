@@ -12,7 +12,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "Slot.h"
+#include "GUI/Slot.h"
 //==============================================================================
 /**
 */

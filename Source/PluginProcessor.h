@@ -10,7 +10,8 @@
 
 #pragma once
 #include <JuceHeader.h>
-#include "FeedbackGraph.h"
+#include "DSP/Utils/ProcessorChain.h"
+#include "DSP/Utils/DelayLine.h"
 
 
 //==============================================================================

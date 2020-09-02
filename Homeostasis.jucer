@@ -7,22 +7,23 @@
     <GROUP id="{4C325697-144E-A12A-0B03-8AB6CD45DF0D}" name="Source">
       <GROUP id="{EB4C6215-54D1-520D-19B8-4A3C2F7C5A86}" name="DSP">
         <GROUP id="{88FD7502-4BA1-9310-C954-21B31F02B288}" name="Processors">
-          <FILE id="u2q6Pv" name="PhaserProcessor.cpp" compile="1" resource="0"
-                file="Source/PhaserProcessor.cpp"/>
-          <FILE id="qoNaaw" name="PhaserProcessor.h" compile="0" resource="0"
-                file="Source/PhaserProcessor.h"/>
-          <FILE id="tlS66g" name="ProcessorBase.h" compile="0" resource="0" file="Source/ProcessorBase.h"/>
-          <FILE id="AxvRWz" name="DistortionProcessor.h" compile="0" resource="0"
-                file="Source/DistortionProcessor.h"/>
-          <FILE id="GPQwgN" name="DistortionProcessor.cpp" compile="1" resource="0"
-                file="Source/DistortionProcessor.cpp"/>
-          <FILE id="b4l6F3" name="SVFProcessor.cpp" compile="1" resource="0"
-                file="Source/SVFProcessor.cpp"/>
-          <FILE id="C4UBNw" name="SVFProcessor.h" compile="0" resource="0" file="Source/SVFProcessor.h"/>
+          <FILE id="qpfQee" name="DistortionProcessor.cpp" compile="1" resource="0"
+                file="Source/DSP/Processors/DistortionProcessor.cpp"/>
+          <FILE id="zppCHy" name="DistortionProcessor.h" compile="0" resource="0"
+                file="Source/DSP/Processors/DistortionProcessor.h"/>
+          <FILE id="jr3uhP" name="PhaserProcessor.cpp" compile="1" resource="0"
+                file="Source/DSP/Processors/PhaserProcessor.cpp"/>
+          <FILE id="mWNwhG" name="PhaserProcessor.h" compile="0" resource="0"
+                file="Source/DSP/Processors/PhaserProcessor.h"/>
+          <FILE id="XKlKGS" name="ProcessorBase.h" compile="0" resource="0" file="Source/DSP/Processors/ProcessorBase.h"/>
+          <FILE id="KxLPXI" name="SVFProcessor.cpp" compile="1" resource="0"
+                file="Source/DSP/Processors/SVFProcessor.cpp"/>
+          <FILE id="NTk75O" name="SVFProcessor.h" compile="0" resource="0" file="Source/DSP/Processors/SVFProcessor.h"/>
         </GROUP>
         <GROUP id="{837DC387-DCFC-AF6C-9ED2-FF503C40F2F3}" name="Utils">
-          <FILE id="rlFTQJ" name="DelayLine.h" compile="0" resource="0" file="Source/DelayLine.h"/>
-          <FILE id="GVvoY9" name="FeedbackGraph.h" compile="0" resource="0" file="Source/FeedbackGraph.h"/>
+          <FILE id="jTAdpN" name="DelayLine.h" compile="0" resource="0" file="Source/DSP/Utils/DelayLine.h"/>
+          <FILE id="eG5bap" name="ProcessorChain.h" compile="0" resource="0"
+                file="Source/DSP/Utils/ProcessorChain.h"/>
         </GROUP>
       </GROUP>
       <FILE id="L01nD4" name="PluginProcessor.cpp" compile="1" resource="0"
@@ -33,14 +34,14 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="rouFIm" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
       <GROUP id="{58B2BD45-0BE0-0455-5054-046F2E4C2B22}" name="GUI">
-        <FILE id="er0Onx" name="Phaser.cpp" compile="1" resource="0" file="Source/Phaser.cpp"/>
-        <FILE id="IlYlGZ" name="Phaser.h" compile="0" resource="0" file="Source/Phaser.h"/>
-        <FILE id="UaVDjl" name="Distortion.cpp" compile="1" resource="0" file="Source/Distortion.cpp"/>
-        <FILE id="skWqZO" name="Distortion.h" compile="0" resource="0" file="Source/Distortion.h"/>
-        <FILE id="yRS7jF" name="SVF.cpp" compile="1" resource="0" file="Source/SVF.cpp"/>
-        <FILE id="TxkQT8" name="SVF.h" compile="0" resource="0" file="Source/SVF.h"/>
-        <FILE id="zHKyMu" name="Slot.cpp" compile="1" resource="0" file="Source/Slot.cpp"/>
-        <FILE id="MWHtcn" name="Slot.h" compile="0" resource="0" file="Source/Slot.h"/>
+        <FILE id="HkKucv" name="Distortion.cpp" compile="1" resource="0" file="Source/GUI/Distortion.cpp"/>
+        <FILE id="tTLpOl" name="Distortion.h" compile="0" resource="0" file="Source/GUI/Distortion.h"/>
+        <FILE id="YfYF3o" name="Phaser.cpp" compile="1" resource="0" file="Source/GUI/Phaser.cpp"/>
+        <FILE id="bHtRmh" name="Phaser.h" compile="0" resource="0" file="Source/GUI/Phaser.h"/>
+        <FILE id="NqBtji" name="Slot.cpp" compile="1" resource="0" file="Source/GUI/Slot.cpp"/>
+        <FILE id="MXkctb" name="Slot.h" compile="0" resource="0" file="Source/GUI/Slot.h"/>
+        <FILE id="wauGOZ" name="SVF.cpp" compile="1" resource="0" file="Source/GUI/SVF.cpp"/>
+        <FILE id="eT6W57" name="SVF.h" compile="0" resource="0" file="Source/GUI/SVF.h"/>
       </GROUP>
     </GROUP>
   </MAINGROUP>

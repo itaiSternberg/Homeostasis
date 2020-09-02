@@ -10,10 +10,10 @@
 
 #pragma once
 #include <JuceHeader.h>
-#include "SVFProcessor.h"
-#include "DistortionProcessor.h"
-#include "PhaserProcessor.h"
-#include "DelayLine.h"
+#include "../Processors/SVFProcessor.h"
+#include "../Processors/DistortionProcessor.h"
+#include "../Processors/PhaserProcessor.h"
+#include "../Processors/ProcessorBase.h"
 
 template <typename Type>
 class ProcessorChain

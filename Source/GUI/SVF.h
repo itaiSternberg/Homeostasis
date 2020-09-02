@@ -11,7 +11,6 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "SVFProcessor.h"
 
 typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ComboBoxAttachment ComboBoxAttachment;
