@@ -46,7 +46,7 @@ std::unique_ptr<AudioProcessorParameterGroup> SVFProcessor::makeParamGroup (Stri
                                         std::make_unique<AudioParameterFloat> ("res" + slotIndex ,
                                                                                "Resonance" + slotIndex,
                                                                                NormalisableRange<float>(
-                                                                                                        1.0f,
+                                                                                                        0.5f,
                                                                                                         5.0f,
                                                                                                         0.1f,
                                                                                                         1,

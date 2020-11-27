@@ -27,10 +27,7 @@ public:
 
 private:
     AudioProcessorValueTreeState& apvts;
-    
-    Slider freqSlider;
-    std::unique_ptr<SliderAttachment> freqAttach;
-    
+        
     Slider rateSlider;
     std::unique_ptr<SliderAttachment> rateAttach;
     
@@ -43,7 +40,6 @@ private:
     Slider mixSlider;
     std::unique_ptr<SliderAttachment> mixAttach;
 
-    
     Label freqLabel;
     Label rateLabel;
     Label depthLabel;

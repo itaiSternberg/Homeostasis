@@ -38,21 +38,6 @@ std::unique_ptr<AudioProcessorParameterGroup> PhaserProcessor::makeParamGroup (S
                                                            "phaser" + slotIndex,
                                                            "Phaser" + slotIndex,
                                                            "|",
-                                                           std::make_unique<AudioParameterFloat>("phaserFreq" + slotIndex,
-                                                                                                 "Phaser Freq " + slotIndex,
-                                                                                                 NormalisableRange<float>(
-                                                                                                                          70.0f,
-                                                                                                                          1850.0f,
-                                                                                                                          0.1f,
-                                                                                                                          0.3,
-                                                                                                                          false
-                                                                                                                          ),
-                                                                                                 1000.0f,
-                                                                                                 "Hz",
-                                                                                                 AudioProcessorParameter::genericParameter,
-                                                                                                 nullptr,
-                                                                                                 nullptr),
-                                                           
                                                            std::make_unique<AudioParameterFloat> ("phaserRate" + slotIndex ,
                                                                                                   "Phaser Rate" + slotIndex,
                                                                                                   NormalisableRange<float>(

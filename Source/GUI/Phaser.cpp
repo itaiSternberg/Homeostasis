@@ -12,7 +12,6 @@
 
 Phaser::Phaser (AudioProcessorValueTreeState& apvts, String slotIndex)
 : apvts(apvts)
-, freqSlider(Slider::SliderStyle::RotaryVerticalDrag,Slider::NoTextBox)
 , rateSlider(Slider::SliderStyle::RotaryVerticalDrag,Slider::NoTextBox)
 , depthSlider(Slider::SliderStyle::RotaryVerticalDrag,Slider::NoTextBox)
 , feedbackSlider(Slider::SliderStyle::RotaryVerticalDrag,Slider::NoTextBox)
@@ -58,30 +57,22 @@ void Phaser::paint (juce::Graphics& g)
 
 void Phaser::resized()
 {
-    rateSlider.setBounds(20, 20, 60, 60);
+    auto SliderSize = 60;
+    auto labelMargin = 10;
+    
+    rateSlider.setBounds(20, 20, SliderSize, SliderSize);
     rateLabel.setBounds(20, 70, 45 , 30 );
     rateLabel.setJustificationType(Justification::centred);
-
-    depthSlider.setBounds(110, 20, 60, 60);
+    
+    depthSlider.setBounds(110, 20, SliderSize, SliderSize);
     depthLabel.setBounds(110, 70, 45 , 30 );
     depthLabel.setJustificationType(Justification::centred);
 
-    mixSlider.setBounds(70, 70, 60, 60);
-    mixLabel.setJustificationType(Justification::centred);
-    mixLabel.setBounds(70, 120, 45 , 30 );
-
-    feedbackSlider.setBounds(20, 120, 60, 60);
+    feedbackSlider.setBounds(20, 120, SliderSize, SliderSize);
     feedbackLabel.setJustificationType(Justification::centred);
-    feedbackLabel.setBounds(20, 160 , 50 , 30 );
-
-    freqSlider.setBounds(110, 120, 60, 60);
-    freqLabel.setJustificationType(Justification::centred);
-    freqLabel.setBounds(110, 160, 45 , 30 );
-
-   
+    feedbackLabel.setBounds(20, 160 , 70 , 30 );
     
-
-    
-
- 
+    mixSlider.setBounds(110, 120, SliderSize, SliderSize);
+    mixLabel.setJustificationType(Justification::centred);
+    mixLabel.setBounds(110, 160, 45 , 30 );
 }
